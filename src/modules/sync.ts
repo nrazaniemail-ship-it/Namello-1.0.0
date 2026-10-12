@@ -1,0 +1,4 @@
+export type Conflict={key:string;local:any;remote:any;resolution:'local'|'remote'|'merged';at:string};
+export function recordConflict(history:Conflict[],c:Omit<Conflict,'at'>,max=100){return [{...c,at:new Date().toISOString()},...history].slice(0,max)}
+export function mergeRecords<T extends Record<string,any>>(local:T[],remote:T[]){const m=new Map<string,T>();const key=(x:T,i:number)=>String(x.id??x.ticket??x.tradeId??`${x.date??''}|${x.pair??x.symbol??''}|${x.entry??''}|${i}`);local.forEach((x,i)=>m.set(key(x,i),x));remote.forEach((x,i)=>{const k=key(x,i),old=m.get(k);m.set(k,old?{...old,...x}:x)});return [...m.values()]}
+export function resolveConflict<T>(local:T,remote:T,mode:'local'|'remote'|'merge'):T{if(mode==='local')return local;if(mode==='remote')return remote;return {...(local as any),...(remote as any)};}
