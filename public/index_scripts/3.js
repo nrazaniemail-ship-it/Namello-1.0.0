@@ -1,0 +1,1 @@
+document.getElementById('boot-status').textContent = 'Loading libraries…';
