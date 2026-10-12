@@ -1,0 +1,65 @@
+{
+  "id": "./",
+  "name": "Namello 1.0.0",
+  "short_name": "Namello 1.0.0",
+  "description": "ساعت زنده نشست‌ها و کیل‌زون‌های ICT به‌وقت نیویورک، همراه با ژورنال معاملات، مدیریت مالی و تحلیل آماری",
+  "start_url": "./index.html?v=1000",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A1230",
+  "theme_color": "#0A1230",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icon-midnight-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-midnight-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-midnight-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-midnight-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ویجت نشست‌ها",
+      "short_name": "ویجت",
+      "description": "ساعت‌شمار گرد و نشست‌های فعال، به‌صورت یک صفحه‌ی مستقل و کوچک",
+      "url": "./widget.html",
+      "icons": [
+        {
+          "src": "icon-midnight-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "display_override": [
+    "standalone",
+    "fullscreen"
+  ],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "version": "1.0.0",
+  "versionCode": 67
+}
