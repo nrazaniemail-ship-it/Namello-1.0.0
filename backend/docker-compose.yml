@@ -1,0 +1,36 @@
+services:
+  namello-backend:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - namello_data:/app/data
+    expose:
+      - "8787"
+    networks:
+      - namello
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NAMELLO_API_DOMAIN=${NAMELLO_API_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - namello-backend
+    networks:
+      - namello
+
+volumes:
+  namello_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  namello:

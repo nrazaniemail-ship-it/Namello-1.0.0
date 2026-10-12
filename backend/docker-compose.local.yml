@@ -1,0 +1,18 @@
+services:
+  namello-backend:
+    build: .
+    restart: unless-stopped
+    environment:
+      PORT: 8787
+      NODE_ENV: development
+      NAMELLO_AUTH_MODE: local
+      NAMELLO_DEV_USER_SUB: local-demo-user
+      NAMELLO_SESSION_SECRET: namello-local-development-secret-change-before-production-please-64-chars
+      CORS_ORIGINS: http://localhost:8080,http://localhost:3000,http://localhost:5173
+      DB_PATH: /app/data/namello.sqlite
+    ports:
+      - "8787:8787"
+    volumes:
+      - namello_local_data:/app/data
+volumes:
+  namello_local_data:

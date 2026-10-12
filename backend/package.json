@@ -1,0 +1,12 @@
+{
+  "name": "namello-sync-backend",
+  "version": "1.0.26",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.5.0" },
+  "scripts": { "start": "node server.mjs", "dev": "node --watch server.mjs", "check": "node --check server.mjs" },
+  "dependencies": {
+    "express": "^5.1.0",
+    "google-auth-library": "^10.5.0"
+  }
+}
