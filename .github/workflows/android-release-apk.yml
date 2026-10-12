@@ -1,1 +1,190 @@
+name: Namello Signed Release APK
 
+# ساخت APK امضاشده‌ی انتشار. نیازمند Secrets این مخزن:
+#   ANDROID_KEYSTORE_BASE64   (فایل keystore با فرمت PKCS12، به‌صورت base64)
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+# برای آزمایش بدون امضا از android-debug-apk.yml استفاده کنید.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: namello-android-release-apk-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-release:
+    name: Build and Sign Namello APK
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configure Android SDK
+        shell: bash
+        run: |
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          echo "/usr/local/lib/android/sdk/platform-tools" >> "$GITHUB_PATH"
+          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+
+      - name: Accept Android licenses and install SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)"
+          fi
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;34.0.0" \
+            "build-tools;35.0.0"
+
+      - name: Verify project files
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in \
+            package.json \
+            index.html \
+            capacitor.config.ts \
+            version.json \
+            native-bridge.js \
+            assets/icon-only.png \
+            native/android/MainActivity.java.tpl \
+            native/android/ic_stat_namello.xml \
+            scripts/build-web.mjs \
+            scripts/configure-android.mjs \
+            scripts/verify-namello-version.mjs
+          do
+            test -f "$f" || { echo "ERROR: Required file not found: $f"; exit 1; }
+          done
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Verify Namello version
+        run: node scripts/verify-namello-version.mjs
+
+      - name: Run tests
+        run: npm test
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: Build web application
+        run: npm run build
+
+      - name: Generate Android project
+        run: npx cap add android
+
+      # نسخه، مجوزها، MainActivity، آیکون‌ها و آیکون اعلان (جایگزین مراحل قدیمی نسخه/آیکون)
+      - name: Configure Android project
+        run: node scripts/configure-android.mjs
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build unsigned Release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd android
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace assembleRelease
+
+      - name: Restore signing keystore
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_BASE64"
+          mkdir -p "$RUNNER_TEMP/namello-signing"
+          chmod 700 "$RUNNER_TEMP/namello-signing"
+          printf '%s' "$KEYSTORE_BASE64" \
+            | base64 --decode \
+            > "$RUNNER_TEMP/namello-signing/namello-release.p12"
+          chmod 600 "$RUNNER_TEMP/namello-signing/namello-release.p12"
+          test -s "$RUNNER_TEMP/namello-signing/namello-release.p12"
+
+      - name: Sign Release APK
+        shell: bash
+        env:
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+
+          VERSION="$(node -p "require('./version.json').version")"
+          UNSIGNED_APK="android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          SIGNED_APK="android/app/build/outputs/apk/release/Namello-${VERSION}-release.apk"
+          APK_SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          KEYSTORE="$RUNNER_TEMP/namello-signing/namello-release.p12"
+
+          test -f "$UNSIGNED_APK"
+          test -x "$APK_SIGNER"
+
+          "$APK_SIGNER" sign \
+            --ks "$KEYSTORE" \
+            --ks-type PKCS12 \
+            --ks-key-alias "$KEY_ALIAS" \
+            --ks-pass env:STORE_PASSWORD \
+            --key-pass env:STORE_PASSWORD \
+            --out "$SIGNED_APK" \
+            "$UNSIGNED_APK"
+
+          "$APK_SIGNER" verify --verbose --print-certs "$SIGNED_APK"
+
+          echo "SIGNED_APK=$SIGNED_APK" >> "$GITHUB_ENV"
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Upload signed Release APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: Namello-${{ env.APP_VERSION }}-Android-Release-APK
+          path: ${{ env.SIGNED_APK }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Namello-release-build-reports
+          path: |
+            android/app/build/reports
+            android/app/src/main/AndroidManifest.xml
+            android/app/src/main/java
+          if-no-files-found: ignore
+          retention-days: 7

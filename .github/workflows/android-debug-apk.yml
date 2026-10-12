@@ -1,1 +1,344 @@
+name: Namello Android Debug APK
 
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: namello-android-debug-apk-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-apk:
+    name: Build installable Android Debug APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      # 1. دریافت سورس برنامه
+      - name: Checkout source
+        uses: actions/checkout@v5
+
+      # 2. نصب Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      # 3. نصب Java 21
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # 4. شناسایی Android SDK
+      - name: Configure Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+
+          if [ ! -d "$SDK" ]; then
+            SDK="/usr/local/lib/android/sdk"
+          fi
+
+          if [ ! -d "$SDK" ]; then
+            echo "ERROR: Android SDK directory not found."
+            exit 1
+          fi
+
+          SDKMANAGER=""
+
+          while IFS= read -r candidate; do
+            if [ -x "$candidate" ]; then
+              SDKMANAGER="$candidate"
+              break
+            fi
+          done < <(
+            find "$SDK/cmdline-tools" \
+              -type f \
+              -name sdkmanager \
+              2>/dev/null || true
+          )
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "ERROR: sdkmanager not found."
+            exit 1
+          fi
+
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "SDKMANAGER_PATH=$SDKMANAGER" >> "$GITHUB_ENV"
+
+          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+
+          echo "Android SDK: $SDK"
+          echo "SDK Manager: $SDKMANAGER"
+
+      # 5. پذیرش مجوزها و نصب بسته‌های Android
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Accepting Android SDK licenses..."
+
+          set +e
+          yes | "$SDKMANAGER_PATH" \
+            --sdk_root="$ANDROID_HOME" \
+            --licenses
+
+          LICENSE_STATUS=${PIPESTATUS[1]}
+          set -e
+
+          if [ "$LICENSE_STATUS" -ne 0 ]; then
+            echo "ERROR: sdkmanager could not accept licenses."
+            exit 1
+          fi
+
+          echo "Android SDK licenses accepted."
+
+          "$SDKMANAGER_PATH" \
+            --sdk_root="$ANDROID_HOME" \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;34.0.0" \
+            "build-tools;35.0.0"
+
+      # 6. بررسی ساختار مخزن
+      - name: Verify repository layout
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for f in \
+            package.json \
+            index.html \
+            vite.config.ts \
+            capacitor.config.ts \
+            version.json \
+            native-bridge.js \
+            assets/icon-only.png \
+            native/android/MainActivity.java.tpl \
+            native/android/ic_stat_namello.xml \
+            scripts/build-web.mjs \
+            scripts/configure-android.mjs \
+            scripts/verify-namello-version.mjs
+          do
+            if [ ! -f "$f" ]; then
+              echo "ERROR: Required file not found: $f"
+              echo "Upload the CONTENTS of the zip to the repository root (including the native/ folder)."
+              exit 1
+            fi
+          done
+
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+
+          const pkg = JSON.parse(
+            fs.readFileSync('package.json', 'utf8')
+          );
+
+          const version = JSON.parse(
+            fs.readFileSync('version.json', 'utf8')
+          );
+
+          if (pkg.name !== 'namello-pwa') {
+            throw new Error(
+              `Unexpected project name: ${pkg.name}`
+            );
+          }
+
+          for (const script of ['build', 'test', 'typecheck', 'verify']) {
+            if (!pkg.scripts?.[script]) {
+              throw new Error(`Missing npm script: ${script}`);
+            }
+          }
+
+          if (
+            !version.version ||
+            !Number.isInteger(version.versionCode)
+          ) {
+            throw new Error('Invalid version.json');
+          }
+
+          console.log(`Project: ${pkg.name}`);
+          console.log(`Version: ${version.version}`);
+          console.log(`Version code: ${version.versionCode}`);
+          NODE
+
+      # 7. بررسی فایل‌های عمومی PWA
+      - name: Verify public files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for f in \
+            manifest.json \
+            manifest-midnight.json \
+            manifest-emerald.json \
+            manifest-royal.json \
+            manifest-graphite.json \
+            manifest-sunset.json \
+            manifest-ruby.json \
+            sw.js \
+            widget.html \
+            native-bridge.js \
+            icon-dashboard-logo.png \
+            icon-sessions.png \
+            icon-journal.png \
+            icon-mt5.jpg \
+            icon-tradingview.png \
+            icon-192.png \
+            icon-512.png
+          do
+            if [ ! -s "public/$f" ]; then
+              echo "ERROR: Missing public/$f"
+              exit 1
+            fi
+          done
+
+      # 8. نصب وابستگی‌ها
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      # 9. بررسی نسخه Namello
+      - name: Verify Namello version
+        run: node scripts/verify-namello-version.mjs
+
+      # 10. اجرای تست‌ها
+      - name: Run tests
+        run: npm test
+
+      # 11. بررسی TypeScript
+      - name: TypeScript check
+        run: npm run typecheck
+
+      # 12. ساخت برنامه وب
+      - name: Build web app
+        run: npm run build
+
+      # 13. بررسی خروجی وب
+      - name: Verify web output
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s dist/index.html
+
+          for asset in \
+            icon-dashboard-logo.png \
+            icon-sessions.png \
+            icon-journal.png \
+            icon-mt5.jpg \
+            icon-tradingview.png \
+            icon-192.png \
+            icon-512.png \
+            manifest.json \
+            widget.html \
+            native-bridge.js \
+            sw.js
+          do
+            if [ ! -s "dist/$asset" ]; then
+              echo "ERROR: Missing dist/$asset"
+              exit 1
+            fi
+          done
+
+          echo "Web build verified."
+          ls -lh dist
+
+      # 14. ایجاد پروژه Android
+      - name: Generate Android project
+        run: npx cap add android
+
+      # 15. تنظیم پروژه Android (نسخه، مجوزها، MainActivity، آیکون‌ها، اعلان‌ها)
+      #     جایگزین دو مرحله‌ی قدیمی «Set Android version» و «Install launcher icon»
+      - name: Configure Android project
+        run: node scripts/configure-android.mjs
+
+      # 16. همگام‌سازی فایل‌های وب و پلاگین‌ها با Android
+      - name: Sync web assets to Android
+        run: npx cap sync android
+
+      # 17. بررسی Gradle Wrapper
+      - name: Verify Gradle wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f android/gradlew
+          test -f android/gradle/wrapper/gradle-wrapper.properties
+
+          chmod +x android/gradlew
+
+      # 18. ساخت APK
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          ./gradlew \
+            --no-daemon \
+            --stacktrace \
+            assembleDebug
+
+      # 19. بررسی فایل APK
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+
+          if [ ! -s "$APK" ]; then
+            echo "ERROR: APK was not generated."
+            exit 1
+          fi
+
+          echo "APK generated successfully:"
+          ls -lh "$APK"
+          sha256sum "$APK"
+
+      # 20. خواندن شماره نسخه
+      - name: Read version
+        id: ver
+        shell: bash
+        run: |
+          VERSION="$(node -p "JSON.parse(require('fs').readFileSync('version.json','utf8')).version")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      # 21. بارگذاری APK
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: Namello-${{ steps.ver.outputs.version }}-Android-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      # 22. در صورت خطا: گزارش‌ها برای بررسی
+      - name: Upload build reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Namello-build-reports
+          path: |
+            android/app/build/reports
+            android/app/src/main/AndroidManifest.xml
+            android/app/src/main/java
+          if-no-files-found: ignore
+          retention-days: 7
