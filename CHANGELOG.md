@@ -1,3 +1,8 @@
+## 1.0.1 (Version Code 68) — versioned source refresh
+- Synced version metadata across the source, PWA manifests, service worker, and package metadata.
+- Preserved the existing backup/restore safeguards, Android Back handling, custom-field profiles, notification scheduling/artwork, and weekly icon assets.
+- Automated verification: 98 tests pass; TypeScript typecheck and web build pass. Real-device APK validation remains outstanding.
+
 ## 1.0.0 (Version Code 67) — consolidated release
 - Includes the latest Namello working source, Android backup/restore safeguards, notification category artwork, and Android Back handling changes carried forward from the 1.0.67 development line.
 - Version Name is reset to the requested 1.0.0; Android versionCode remains incremented to 67 so Android does not treat this package as an older build.
