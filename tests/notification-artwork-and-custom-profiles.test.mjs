@@ -6,13 +6,14 @@ const bridge = await readFile('native-bridge.js', 'utf8');
 const config = await readFile('scripts/configure-android.mjs', 'utf8');
 const app = await readFile('index.html', 'utf8');
 
-test('Android notifications map all five categories to large artwork resources', async () => {
+test('Android notifications retain category artwork assets without duplicating the logo on the right', async () => {
   for (const key of ['evaluation', 'psychology', 'sessions', 'news', 'motivation']) {
     assert.ok(bridge.includes(`nm_notif_${key}`), `notification mapping missing ${key}`);
     assert.ok(config.includes(`nm_notif_${key}.png`), `Android resource copy missing ${key}`);
   }
   for (const f of ['01-evaluation.png','02-psychology.png','03-sessions-and-events.png','04-news.png','05-motivation.png']) await access(`logos/${f}`);
-  assert.match(bridge, /largeIcon:\s*categoryIcon/);
+  assert.doesNotMatch(bridge, /largeIcon:\s*categoryIcon/, 'avoid a second logo on the right side of Android notifications');
+  assert.match(bridge, /smallIcon:\s*SMALL_ICON/);
 });
 
 test('custom field profiles are persisted and raw mode does not delete trade values', () => {
