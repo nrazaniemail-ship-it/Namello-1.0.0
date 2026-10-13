@@ -71,6 +71,7 @@
   var KEY_NEWS = 'namello_news_events_v1';
   var KEY_MOTIV_MSGS = 'namello_motivational_messages_v1';
   var KEY_MOTIV_SET = 'namello_motivational_settings_v1';
+  var KEY_TEXT_NOTIFS = 'namello_text_notification_settings_v1';
   var KEY_EXACT_ASKED = 'namello_native_exact_alarm_asked_v1';
   var MOTIV_TITLE = 'پیام انگیزشی Namello';
 
@@ -180,7 +181,7 @@
     var n = {
       id: immediateId(), title: title, body: body,
       channelId: options.silent ? CH_QUIET : CH_ALERT,
-      smallIcon: SMALL_ICON, largeIcon: categoryIcon(title, body, options), extra: { tag: options.tag || '' }
+      smallIcon: SMALL_ICON, extra: { tag: options.tag || '' }
     };
     if (body.length > 40) n.largeBody = body;
     return call('LocalNotifications', 'schedule', { notifications: [n] }).catch(function (e) {
@@ -358,6 +359,11 @@
       planSessions(res[0], now, out);
       planNews(res[1], now, out);
       planMotivation(now, out);
+      var textPrefs = readLocalJson(KEY_TEXT_NOTIFS) || {};
+      out = out.filter(function (item) {
+        var category = item.kind === 'session' ? 'sessions' : item.kind === 'news' ? 'news' : item.kind === 'motivation' ? 'motivation' : null;
+        return !category || textPrefs[category] !== false;
+      });
       out.sort(function (a, b) { return a.at - b.at; });
       return out.slice(0, MAX_PLAN);
     });
@@ -401,7 +407,6 @@
           p.id = PLAN_ID_BASE + i;
           var n = {
             id: p.id, title: p.title, body: p.body, channelId: CH_ALERT, smallIcon: SMALL_ICON,
-            largeIcon: categoryIcon(p.title, p.body, { kind: p.kind }),
             schedule: { at: new Date(p.at), allowWhileIdle: true }, extra: { kind: p.kind }
           };
           if (p.body.length > 40) n.largeBody = p.body;
@@ -645,5 +650,6 @@
   });
   window.addEventListener('pagehide', function () { sync(false); });
   window.addEventListener('namello-motivational-settings', function () { scheduleSync(false); });
+  window.addEventListener('namello-text-notification-settings', function () { scheduleSync(false); });
   setInterval(function () { if (document.visibilityState !== 'hidden') sync(false); }, 120000);
 })();
