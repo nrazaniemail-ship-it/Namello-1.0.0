@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.0</title>
+<title>Namello 1.0.1</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -146,7 +146,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.0…</div>
+<div id="boot-status">Loading Namello 1.0.1…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -793,7 +793,7 @@ const EN_UI_PHRASES = {
   "فعال‌سازی اعلان‌های آلارم نشست‌ها":"Enable Session Alarm Notifications","تنظیمات نشست‌ها":"Session Settings","اشتراک نشست‌ها":"Session Overlap","آلارم شروع":"Start Alarm","آلارم پایان":"End Alarm","تا پایان":"until end","تا شروع":"until start","بدون نشست":"No Session",
   "همین الان فعال هستند":"Active Right Now","در حال حاضر هیچ نشست یا کیل‌زونی فعال نیست":"No session or kill zone is currently active",
   "پروفایل":"Profile","داشبورد":"Dashboard","اخبار":"News","ژورنال":"Journal","سیستم‌ها":"Systems","استراتژی":"Strategy","مالی":"Finance","تحلیل":"Analysis","ارزیابی استیتمنت":"Statement Review","ارزیابی رفتار بازار":"Market Behavior Evaluation","اهداف معامله گری":"Trading Goals","اهداف معامله‌گری":"Trading Goals","اهداف زندگی":"Life Goals","شکر گزاری":"Gratitude","روانشناسی":"Psychology","خروجی کل":"Full Export",
-  "رنگ زمینه برنامه":"App Background","فونت برنامه":"App Font","زبان برنامه":"App Language","منبع ذخیره‌سازی و بکاپ":"Storage & Backup Source","امنیت، پشتیبان، ذخیره ابری و Namello Backend":"Security, Backup, Cloud Storage & Namello Backend","تغییر پوشه":"Change Folder","پشتیبان‌گیری خودکار":"Automatic Backup","حافظه‌ی داخلی برنامه":"App Internal Storage","ادغام با داده‌های فعلی":"Merge with Existing Data","جایگزینی کامل داده‌ها":"Replace All Data",
+  "رنگ زمینه برنامه":"App Background","فونت برنامه":"App Font","زبان برنامه":"App Language","منبع ذخیره‌سازی و بکاپ":"Storage & Backup Source","امنیت، پشتیبان، ذخیره ابری و Namello Backend":"Security, Backup, Cloud Storage & Namello Backend","انتخاب پوشه":"Select Folder","پشتیبان‌گیری خودکار":"Automatic Backup","حافظه‌ی داخلی برنامه":"App Internal Storage","ادغام با داده‌های فعلی":"Merge with Existing Data","جایگزینی کامل داده‌ها":"Replace All Data",
   "بخش":"Section","جمع/باز کردن":"Expand/Collapse","برای جمع/باز کردن این بخش کلیک کنید":"Click to expand/collapse this section","نسخه":"Version","نسخه‌ی برنامه":"App Version","نسخهٔ پایه و بازطراحی‌شده":"Base and redesigned release","آخرین تغییرات نسخه‌ی":"Latest changes in version","نسخه شما آخرین نسخه است":"Your app is up to date",
   "اپیزود قبلی":"Previous Episode","اپیزود بعدی":"Next Episode","پخش/توقف":"Play/Pause","پخش":"Play","توقف":"Pause","تغییر سرعت پخش":"Playback Speed","Loop خاموش":"Loop Off",
   "پخش صوتی":"Audio Playback","آپلود عکس":"Upload Image","آپلود فایل":"Upload File","آدرس":"Address","مسیر":"Path","ذخیره فایل":"Save File",
@@ -1284,8 +1284,8 @@ function describeArc(cx, cy, r, a0, a1) {
 function SessionClock({ minutesOfDay, seconds = 0, sessions, killzones, silverbullets, colors }) {
     const size = 360, cx = size / 2, cy = size / 2;
     const sessionOverlaps = computeSessionOverlaps(sessions);
-    const ktRing = { r: 100, w: 13, items: killzones, textColor: "#14532D", fontSize: 8, showLabel: true };
-    const sbRing = { r: 78, w: 9, items: silverbullets, textColor: "#7C2D12", fontSize: 7, showLabel: false };
+    const ktRing = { r: 100, w: 15, items: killzones, textColor: "#14532D", fontSize: 9, showLabel: true };
+    const sbRing = { r: 78, w: 11, items: silverbullets, textColor: "#7C2D12", fontSize: 8, showLabel: false };
     const totalMinutes = minutesOfDay + (seconds / 60);
     const hourAngle = (totalMinutes / 1440) * 360;
     const minuteOfHour = totalMinutes % 60;
@@ -1296,8 +1296,8 @@ function SessionClock({ minutesOfDay, seconds = 0, sessions, killzones, silverbu
     const secondPt = polar(cx, cy, 160, secondAngle);
     const hourTicks = Array.from({ length: 24 }, (_, i) => i);
     const minuteTicks = Array.from({ length: 60 }, (_, i) => i);
-    const sessR = 128, sessW = 19;
-    return (React.createElement("svg", { viewBox: `0 0 ${size} ${size}`, className: "w-full max-w-[300px] mx-auto select-none", style: { aspectRatio: "1 / 1" }, preserveAspectRatio: "xMidYMid meet" },
+    const sessR = 128, sessW = 23;
+    return (React.createElement("svg", { viewBox: `0 0 ${size} ${size}`, className: "w-full max-w-[340px] mx-auto select-none", style: { aspectRatio: "1 / 1" }, preserveAspectRatio: "xMidYMid meet" },
         React.createElement("defs", null,
             React.createElement("radialGradient", { id: "namelloClockFace", cx: "50%", cy: "50%", r: "65%" },
                 React.createElement("stop", { offset: "0%", stopColor: "#141922" }),
@@ -1309,10 +1309,10 @@ function SessionClock({ minutesOfDay, seconds = 0, sessions, killzones, silverbu
         hourTicks.map(h => {
             const a = (h / 24) * 360;
             const major = h % 3 === 0;
-            const p1 = polar(cx, cy, major ? 159 : 161, a), p2 = polar(cx, cy, 168, a), lp = polar(cx, cy, 172, a);
+            const p1 = polar(cx, cy, major ? 160 : 162, a), p2 = polar(cx, cy, 168, a), lp = polar(cx, cy, 151, a);
             return (React.createElement("g", { key: h },
                 React.createElement("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: major ? "#4A5260" : "#333A44", strokeWidth: major ? 1.5 : 1 }),
-                React.createElement("text", { x: lp.x, y: lp.y, fill: major ? "#9CA3AF" : "var(--text-muted)", fontSize: major ? 13 : 11, fontWeight: "700", fontFamily: "JetBrains Mono, monospace", textAnchor: "middle", dominantBaseline: "middle" }, pad2(h))));
+                React.createElement("text", { x: lp.x, y: lp.y, fill: major ? "#9CA3AF" : "var(--text-muted)", fontSize: major ? 14 : 12, fontWeight: "700", fontFamily: "JetBrains Mono, monospace", textAnchor: "middle", dominantBaseline: "middle" }, pad2(h))));
         }),
         minuteTicks.map(m => {
             const a = (m / 60) * 360;
@@ -1320,7 +1320,7 @@ function SessionClock({ minutesOfDay, seconds = 0, sessions, killzones, silverbu
             const p1 = polar(cx, cy, major ? 141 : 143, a), p2 = polar(cx, cy, 148, a), lp = polar(cx, cy, 153.5, a);
             return (React.createElement("g", { key: `m-${m}` },
                 React.createElement("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: major ? "#5B6472" : "#333A44", strokeWidth: major ? 1.2 : 0.75 }),
-                major && React.createElement("text", { x: lp.x, y: lp.y, fill: "#5B6472", fontSize: "7", fontWeight: "600", fontFamily: "JetBrains Mono, monospace", textAnchor: "middle", dominantBaseline: "middle" }, m === 0 ? 60 : m)));
+                major && React.createElement("text", { x: lp.x, y: lp.y, fill: "#5B6472", fontSize: "8", fontWeight: "600", fontFamily: "JetBrains Mono, monospace", textAnchor: "middle", dominantBaseline: "middle" }, m === 0 ? 60 : m)));
         }),
         React.createElement("g", null,
             React.createElement("circle", { cx: cx, cy: cy, r: sessR, fill: "none", stroke: "var(--bg-card)", strokeWidth: sessW }),
@@ -1342,12 +1342,12 @@ function SessionClock({ minutesOfDay, seconds = 0, sessions, killzones, silverbu
                     const pathId = `arc-sess-${ev.key}-${si}`;
                     const arcLen = ((seg[1] - seg[0]) / 360) * 2 * Math.PI * sessR;
                     const label = (ev.short || ev.name).toUpperCase();
-                    const canFit = arcLen > label.length * (9 * 0.62) + 6;
+                    const canFit = arcLen > label.length * (10 * 0.62) + 6;
                     if (!canFit)
                         return null;
                     return (React.createElement("g", { key: `label-${pathId}` },
                         React.createElement("path", { id: pathId, d: describeArc(cx, cy, sessR, seg[0], seg[1]), fill: "none", stroke: "none" }),
-                        React.createElement("text", { fontSize: 9, fontFamily: "Arial, Helvetica, sans-serif", fontWeight: "800", letterSpacing: "0.5", fill: "var(--bg-page)", stroke: "#F5F6F7", strokeWidth: 2.6, paintOrder: "stroke", opacity: ev.active ? 1 : 0.75 },
+                        React.createElement("text", { fontSize: 10, fontFamily: "Arial, Helvetica, sans-serif", fontWeight: "800", letterSpacing: "0.5", fill: "var(--bg-page)", stroke: "#F5F6F7", strokeWidth: 2.6, paintOrder: "stroke", opacity: ev.active ? 1 : 0.75 },
                             React.createElement("textPath", { href: `#${pathId}`, startOffset: "50%", textAnchor: "middle" }, label))));
                 });
             })),
@@ -3007,6 +3007,13 @@ function NmDashboardAIArm({ mode, trades }) {
       actions.push(streak ? "قانون توقف موقت و بازبینی چک‌لیست را اجرا کن؛ برای جبران زیان حجم را افزایش نده." : "معاملات پس از باخت، تغییرات لات و موارد عدم پایبندی به برنامه را با یادداشت‌ها تطبیق بده.");
       actions.push("یک اقدام رفتاری قابل‌اندازه‌گیری برای چند معامله بعدی انتخاب و نتیجه را ثبت کن.");
     }
+    React.useEffect(() => {
+        if ((mode !== "advanced" && mode !== "psych") || !nums.length || !actions.length) return;
+        const category = mode === "advanced" ? "evaluation" : "psychology";
+        const recommendation = actions[0];
+        const dedupe = `${mode}|${nums.length}|${Math.round(total * 100) / 100}|${recommendation}`;
+        nmSendTextCategoryNotification(category, mode === "advanced" ? "توصیه ارزیابی پیشرفته Namello" : "توصیه روانشناسی ترید Namello", recommendation, dedupe);
+    }, [mode, nums.length, Math.round(total * 100) / 100, actions.join("|")]);
     return React.createElement("section", { className:"rounded-2xl p-3 mb-3", style:{background:"color-mix(in srgb, #A78BFA 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #A78BFA 35%, var(--border-2))"} },
       React.createElement("button", {type:"button", onClick:()=>setExpanded(v=>!v), className:"w-full flex items-center justify-between", "aria-expanded":expanded},
         React.createElement("span", {className:"flex items-center gap-2 text-[12px] font-extrabold",style:{color:"var(--text-primary)"}}, "✨", "هوش مصنوعی", React.createElement("span",{className:"text-[9px] font-medium px-2 py-0.5 rounded-full",style:{background:"#A78BFA22",color:"#A78BFA"}}, mode === "stats" ? "تحلیل آماری" : mode === "advanced" ? "توصیه اجرایی" : "بینش رفتاری")),
@@ -3079,8 +3086,8 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
         showPsychology && React.createElement("div", { className: "p-3" },
             React.createElement("div", { className: "text-[9px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "منبع داده‌ای روانشناسی: ", source === "statement" ? "ارزیابی استیتمنت" : "معاملات ژورنال"),
             sourcePanel,
-            RE(NmDashboardAIArm, { mode:"psych", trades }),
-            results
+            results,
+            RE(NmDashboardAIArm, { mode:"psych", trades })
         )
     );
 }
@@ -3442,12 +3449,13 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.0";
-const NM_VERSION_CODE = 67;
+const NM_VERSION_NAME = "1.0.1";
+const NM_VERSION_CODE = 68;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_029_NOTE = "نسخه 1.0.29: یکدست‌سازی شماره نسخه، کد نسخه و کش آفلاین در بسته PWA؛ قابلیت‌های هوش مصنوعی نسخه قبل حفظ شده‌اند.";
 const NM_VERSION_DATE = "انتشار یکپارچه 1.0.0؛ شامل آخرین اصلاحات ژورنال، پشتیبان‌گیری و بازگشت اندروید";
 const NM_CHANGELOG = [
+    "نسخه 1.0.1: نسخه‌بندی برنامه همگام‌سازی شد؛ اصلاحات موجود مربوط به پشتیبان اندروید، دکمه بازگشت، پروفایل‌های فیلد سفارشی، اعلان‌ها و آیکون‌های هفتگی حفظ شدند. آزمون‌های خودکار و typecheck اجرا شدند؛ آزمایش APK روی دستگاه واقعی جداگانه لازم است.",
     "نسخه 1.0.0: بسته‌ی یکپارچه با آخرین تغییرات موجود در شاخه‌ی توسعه؛ Version Code اندروید برای جلوگیری از downgrade روی 67 نگه داشته شده است.",
     "نسخه 1.0.67: اگر دکمه بازگشت هنگام بازبودن پنجره یا زیرصفحه مصرف شود، شمارنده خروج با دو بار فشردن در صفحه اصلی صفر می‌شود؛ این کار مانع خروج ناخواسته پس از یک مکث کوتاه می‌شود.",
     "نسخه 1.0.66: اعتبارسنجی مستقل payload در لایه‌ی اجرای بازیابی اضافه شد؛ فایل نامعتبر یا فاقد کلیدهای Namello پیش از snapshot و هرگونه تغییر رد می‌شود.",
@@ -4253,9 +4261,17 @@ function NmStorageCard({ showToast }) {
         } catch (err) { }
     }, []);
     useEffect(() => { load(); }, [load]);
-    const requestPersist = async () => { const ok = await window.storage.requestPersist(); setPersisted(ok); showToast(ok ? "ذخیره‌سازی پایدار فعال شد." : "مرورگر این درخواست را تایید نکرد؛ معمولاً وقتی برنامه به‌عنوان PWA نصب شده باشد تایید می‌شود."); };
+    const requestPersist = async () => {
+        if (!(navigator.storage && typeof navigator.storage.persist === "function")) {
+            showToast("این مرورگر درخواست ذخیره‌سازی پایدار را پشتیبانی نمی‌کند. پشتیبان‌گیری منظم را فعال نگه دارید.");
+            return;
+        }
+        const ok = await window.storage.requestPersist();
+        setPersisted(ok);
+        showToast(ok ? "درخواست پذیرفته شد؛ مرورگر داده‌های Namello را در برابر پاک‌سازی خودکار محافظت می‌کند." : "درخواست پذیرفته نشد. این گزینه در اختیار مرورگر/سیستم است؛ از پشتیبان‌گیری منظم استفاده کنید.");
+    };
     const pct = est && est.quota ? Math.min(100, Math.round((est.usage / est.quota) * 100)) : null;
-    return RE(NmCollapsible, { title: "فضای ذخیره‌سازی", subtitle: "حجم مصرفی، وضعیت مهاجرت داده و ذخیره‌سازی پایدار", icon: "🗄️" },
+    return RE(NmCollapsible, { title: "فضای ذخیره‌سازی", subtitle: "بررسی محل نگهداری داده‌ها، حجم مصرفی و محافظت در برابر پاک‌سازی خودکار", icon: "🗄️" },
         !info ? RE("div", { className: "text-[12px]", style: { color: "var(--text-muted)" } }, "در حال بررسی...")
             : RE(React.Fragment, null,
                 RE("div", { className: "rounded-xl p-3 mb-3", style: { background: info.backend === "idb" ? "#34D39915" : "#F59E0B15", border: "1px solid " + (info.backend === "idb" ? "#34D39940" : "#F59E0B40") } },
@@ -4277,9 +4293,10 @@ function NmStorageCard({ showToast }) {
                         RE("span", { className: "mono", style: { color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" } }, nmFmtBytes(s.size))))),
                 RE("div", { className: "flex items-center justify-between gap-2 rounded-xl p-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                     RE("div", { className: "min-w-0" },
-                        RE("div", { className: "text-[12px] font-semibold", style: { color: "var(--text-primary)" } }, "ذخیره‌سازی پایدار"),
-                        RE("div", { className: "text-[10px] leading-5 mt-0.5", style: { color: "var(--text-muted)" } }, persisted ? "فعال — مرورگر داده‌ی برنامه را هنگام کمبود فضا حذف نمی‌کند." : "از پاک‌شدن خودکار داده هنگام کمبود فضا جلوگیری می‌کند.")),
-                    !persisted && RE("button", { type: "button", onClick: requestPersist, className: "shrink-0 px-3 py-2 rounded-xl text-[12px] font-medium", style: { background: nmTint(15), color: "var(--accent-gold)" } }, "فعال‌سازی"))));
+                        RE("div", { className: "text-[12px] font-semibold", style: { color: "var(--text-primary)" } }, "محافظت از داده‌ها در برابر پاک‌سازی خودکار"),
+                        RE("div", { className: "text-[10px] leading-5 mt-0.5", style: { color: "var(--text-muted)" } }, persisted === true ? "وضعیت: فعال. مرورگر معمولاً داده‌های Namello را هنگام کمبود فضا خودکار حذف نمی‌کند؛ این گزینه جایگزین فایل پشتیبان نیست." : persisted === false ? "وضعیت: هنوز فعال نشده یا درخواست پذیرفته نشده است. این گزینه فقط از حذف خودکار توسط مرورگر می‌کاهد و مانع پاک‌کردن دستی داده‌ها، حذف برنامه یا خرابی دستگاه نمی‌شود." : "وضعیت این قابلیت توسط مرورگر گزارش نشده است. برای ایمنی، پشتیبان‌گیری منظم را فعال نگه دارید.")),
+                    persisted !== true && RE("button", { type: "button", onClick: requestPersist, className: "shrink-0 px-3 py-2 rounded-xl text-[12px] font-medium", style: { background: nmTint(15), color: "var(--accent-gold)" } }, "درخواست فعال‌سازی")),
+                RE("div", { className: "text-[10px] leading-5 mt-2 px-1", style: { color: "var(--text-muted)" } }, "این دکمه کلید روشن/خاموش معمولی نیست؛ از مرورگر درخواست می‌کند داده‌های محلی برنامه (مانند ژورنال و تنظیمات) را در برابر پاک‌سازی خودکار محافظت کند. تصمیم نهایی با مرورگر است و ممکن است درخواست رد شود. خاموش‌کردن این قابلیت از داخل برنامه معمولاً امکان‌پذیر نیست. فایل پشتیبان جداگانه تهیه کنید."))));
 }
 
 function NmUpdateCard() {
@@ -4565,7 +4582,14 @@ async function nmBkCreateManual() {
     return { ok: true, name, where, size: text.length };
 }
 async function nmBkPickManualFolder() {
-    if (!nmBkCaps().dir) return { unsupported: true };
+    const caps = nmBkCaps();
+    if (caps.native) {
+        const picked = await nmBkNativePickFolder();
+        if (!picked.ok) return picked;
+        const m = await nmBkLoadMeta(); m.manualFolder = picked.name; m.nativeFolderUri = picked.uri || ""; await nmBkSaveMeta(m);
+        return { ok: true, name: picked.name };
+    }
+    if (!caps.dir) return { unsupported: true };
     try { const d = await window.showDirectoryPicker({ id: "namello-manual", mode: "readwrite" }); await nmIdbSet("manualDir", d); const m = await nmBkLoadMeta(); m.manualFolder = d.name; await nmBkSaveMeta(m); return { ok: true, name: d.name }; }
     catch (e) { return nmIsAbort(e) ? { cancelled: true } : { error: true }; }
 }
@@ -4573,6 +4597,12 @@ async function nmBkPickManualFolder() {
 async function nmBkPickAutoTarget() {
     const caps = nmBkCaps();
     try {
+        if (caps.native) {
+            const picked = await nmBkNativePickFolder();
+            if (!picked.ok) return picked;
+            const m = await nmBkLoadMeta(); m.autoKind = "native-picked"; m.autoName = picked.name; m.nativeFolderUri = picked.uri || ""; m.pendingPermission = false; await nmBkSaveMeta(m);
+            return { ok: true, kind: "native-picked", name: picked.name };
+        }
         if (caps.dir) {
             const d = await window.showDirectoryPicker({ id: "namello-auto", mode: "readwrite" });
             await nmIdbSet("autoTarget", { kind: "dir", handle: d });
@@ -4937,10 +4967,10 @@ function NmBackupCard({ showToast }) {
                 RE("div", { className: "flex items-center justify-between gap-2" },
                     RE("div", { className: "min-w-0" },
                         RE("div", { className: "text-[11px]", style: { color: "var(--text-muted)" } }, "پوشه‌ی ذخیره‌ی فایل پشتیبان (دستی):"),
-                        RE("div", { className: "text-[13px] font-semibold truncate", style: { color: "var(--accent-gold)" } }, caps.native ? (meta.manualFolder || meta.autoName && meta.autoKind === "native-picked" ? (meta.manualFolder || meta.autoName) + " (پوشه‌ی انتخاب‌شده)" : "Download/" + NM_BK_NATIVE_DIR) : caps.dir ? (meta.manualFolder || "هنوز انتخاب نشده") : (caps.save ? "محل ذخیره هنگام ایجاد فایل پرسیده می‌شود" : "پوشه‌ی دانلودهای گوشی"))),
-                    (caps.dir || caps.native || caps.save) && RE("button", { type: "button", onClick: onPickManual, className: "shrink-0 px-3 py-2 rounded-xl text-[12px] font-medium", style: { background: nmTint(15), color: "var(--accent-gold)" } }, "انتخاب پوشه")),
+                        RE("div", { className: "text-[13px] font-semibold truncate", style: { color: "var(--accent-gold)" } }, caps.native ? (meta.manualFolder || meta.autoName && meta.autoKind === "native-picked" ? (meta.manualFolder || meta.autoName) + " (پوشه‌ی انتخاب‌شده)" : "Download/" + NM_BK_NATIVE_DIR) : caps.native ? (meta.manualFolder || "Download/Namello-Backups (یا پوشه انتخابی)") : caps.dir ? (meta.manualFolder || "هنوز انتخاب نشده") : (caps.save ? "محل ذخیره هنگام ایجاد فایل پرسیده می‌شود" : "پوشه‌ی دانلودهای گوشی"))),
+                    (caps.dir || caps.native) && RE("button", { type: "button", onClick: onPickManual, className: "shrink-0 px-3 py-2 rounded-xl text-[12px] font-medium", style: { background: nmTint(15), color: "var(--accent-gold)" } }, "انتخاب پوشه")),
                 caps.native && RE("p", { className: "text-[10px] leading-5 mt-2", style: { color: "var(--text-muted)" } }, "در برنامه‌ی نصبی، فایل پشتیبان در پوشه‌ی Download/" + NM_BK_NATIVE_DIR + " ذخیره می‌شود و با «Files» یا هر برنامه‌ی دیگر قابل دسترسی است. این فایل شامل همه‌ی داده‌های معاملاتی توست؛ آن را جای امنی نگه دار."),
-                !caps.native && !caps.dir && RE("p", { className: "text-[10px] leading-5 mt-2", style: { color: "var(--text-muted)" } }, "مرورگر فعلی شما انتخاب «پوشه‌ی دائمی» را پشتیبانی نمی‌کند" + (caps.save ? "؛ به‌جایش هر بار محل ذخیره‌ی فایل را خودتان انتخاب می‌کنید." : "؛ فایل در پوشه‌ی دانلودها ذخیره می‌شود و بعد می‌توانید آن را به هر پوشه‌ای منتقل کنید."))),
+                !caps.native && !(caps.dir || caps.native) && RE("p", { className: "text-[10px] leading-5 mt-2", style: { color: "var(--text-muted)" } }, "مرورگر فعلی شما انتخاب «پوشه‌ی دائمی» را پشتیبانی نمی‌کند" + (caps.save ? "؛ به‌جایش هر بار محل ذخیره‌ی فایل را خودتان انتخاب می‌کنید." : "؛ فایل در پوشه‌ی دانلودها ذخیره می‌شود و بعد می‌توانید آن را به هر پوشه‌ای منتقل کنید."))),
             hasPre && RE("button", { type: "button", onClick: onUndoRestore, className: "w-full py-2 rounded-lg text-[11px] mb-3", style: { background: "var(--bg-card2)", color: "var(--text-secondary)" } }, "↩ لغو آخرین بازیابی (برگرداندن وضعیت قبل از آن)"),
             RE("div", { className: "pt-3 mt-1", style: { borderTop: "1px solid var(--border-1)" } },
                 RE("div", { className: "flex items-center gap-2 mb-3" },
@@ -4959,7 +4989,7 @@ function NmBackupCard({ showToast }) {
                         RE("div", { className: "min-w-0" },
                             RE("div", { className: "text-[11px]", style: { color: "var(--text-muted)" } }, "مسیر ذخیره‌سازی خودکار:"),
                             RE("div", { className: "text-[14px] font-semibold truncate", style: { color: "var(--accent-gold)" } }, autoPath)),
-                        (caps.dir || caps.save) && RE("button", { type: "button", onClick: onChangeAutoFolder, className: "shrink-0 px-3 py-3 rounded-xl text-[12px] font-medium", style: { background: nmTint(15), color: "var(--accent-gold)" } }, caps.dir ? "انتخاب پوشه" : "انتخاب فایل")),
+                        (caps.dir || caps.save || caps.native) && RE("button", { type: "button", onClick: onChangeAutoFolder, className: "shrink-0 px-3 py-3 rounded-xl text-[12px] font-medium", style: { background: nmTint(15), color: "var(--accent-gold)" } }, (caps.dir || caps.native) ? "انتخاب پوشه" : "انتخاب فایل")),
                     meta.pendingPermission && RE("button", { type: "button", onClick: onApprove, disabled: busy, className: "w-full py-2.5 rounded-xl text-[12px] font-semibold mb-3", style: { background: "#F59E0B22", color: "#F59E0B" } }, "⚠ تایید دسترسی و ذخیره‌ی پشتیبان در پوشه‌ی انتخابی"),
                     snaps.length > 0 && RE("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "var(--bg-card2)" } },
                         RE("div", { className: "text-[11px] mb-1.5", style: { color: "var(--text-muted)" } }, "نسخه‌های خودکار ذخیره‌شده‌ی داخلی (۳ مورد آخر)"),
@@ -5485,7 +5515,7 @@ function NmCustomFieldsManager() {
                 RE("span", { className: "min-w-0 flex-1 text-[10px]", style: { color: "var(--text-secondary)" } }, name),
                 RE("button", { type: "button", onClick: () => { setProfileName(name); applyMode("entry", "custom", name); }, className: "px-2 py-1 rounded-md text-[10px]", style: { background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-2)" } }, "ثبت ورود"),
                 RE("button", { type: "button", onClick: () => { setProfileName(name); applyMode("result", "custom", name); }, className: "px-2 py-1 rounded-md text-[10px]", style: { background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-2)" } }, "نتیجه معامله")))));
-    return RE(NmCollapsible, { title: "فیلدهای سفارشی ژورنال", subtitle: "حالت‌ها و پیکربندی‌های فیلدهای ثبت معامله", icon: "🧩" },
+    return RE(NmCollapsible, { title: "فیلدهای سفارشی معامله", subtitle: "تنظیم مستقل ثبت ورود و ثبت نتیجه معامله", icon: "🧩" },
         RE("p", { className: "text-[11px] leading-6 mb-3", style: { color: "var(--text-secondary)" } }, "حالت خام فیلدهای سفارشی را از فرم پنهان می‌کند و اطلاعات قبلی را پاک نمی‌کند. پیکربندی‌ها برای استفاده‌ی دوباره ذخیره می‌شوند."),
         modePanel,
         profilePanel,
@@ -6320,6 +6350,62 @@ function NmLibrarySettingsCard({ open, onToggle }) {
     );
 }
 /* ---------------- پیام انگیزشی ترید ---------------- */
+const NM_TEXT_NOTIF_KEY = "namello_text_notification_settings_v1";
+const NM_TEXT_NOTIF_DEFAULTS = Object.freeze({ sessions: true, news: true, evaluation: true, psychology: true, motivation: true });
+function nmTextNotifLoadSettings() {
+    try { return { ...NM_TEXT_NOTIF_DEFAULTS, ...JSON.parse(localStorage.getItem(NM_TEXT_NOTIF_KEY) || "{}") }; }
+    catch (e) { return { ...NM_TEXT_NOTIF_DEFAULTS }; }
+}
+function nmTextNotifSaveSettings(next) {
+    const clean = { ...NM_TEXT_NOTIF_DEFAULTS, ...(next || {}) };
+    try { localStorage.setItem(NM_TEXT_NOTIF_KEY, JSON.stringify(clean)); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent("namello-text-notification-settings")); } catch (e) {}
+    return clean;
+}
+function nmTextNotifEnabled(category) { return nmTextNotifLoadSettings()[category] !== false; }
+const NM_TEXT_NOTIF_ART = Object.freeze({
+    evaluation: "./notification-icons/01-evaluation.png",
+    psychology: "./notification-icons/02-psychology.png",
+    sessions: "./notification-icons/03-sessions-and-events.png",
+    news: "./notification-icons/04-news.png",
+    motivation: "./notification-icons/05-motivation.png"
+});
+function nmSendTextCategoryNotification(category, title, body, dedupeKey) {
+    if (!nmTextNotifEnabled(category) || typeof Notification === "undefined" || Notification.permission !== "granted" || !("serviceWorker" in navigator)) return Promise.resolve(false);
+    const day = new Date().toISOString().slice(0, 10);
+    const key = "namello_text_notif_sent_" + category + "_" + day;
+    const fingerprint = String(dedupeKey || body || title).slice(0, 180);
+    try { if (localStorage.getItem(key)) return Promise.resolve(false); } catch (e) {}
+    return navigator.serviceWorker.ready.then(reg => reg.showNotification(title, {
+        body, icon: NM_TEXT_NOTIF_ART[category] || "./icon-192.png", badge: "./icon-192.png",
+        tag: "namello-text-" + category + "-" + day, requireInteraction: false, silent: false,
+        data: { kind: category, category }
+    })).then(() => { try { localStorage.setItem(key, fingerprint); } catch (e) {} return true; }).catch(() => false);
+}
+function NmNotificationTextSettings() {
+    const [settings, setSettings] = React.useState(() => nmTextNotifLoadSettings());
+    const [expanded, setExpanded] = React.useState(false);
+    const rows = [
+        ["sessions", "نشست‌ها و رویدادها", "شروع و پایان نشست‌ها، Kill Zone و Silver Bullet", "./notification-icons/03-sessions-and-events.png"],
+        ["news", "اخبار اقتصادی", "هشدار خبر ۳۰ ثانیه پیش از زمان رویداد", "./notification-icons/04-news.png"],
+        ["evaluation", "توصیه‌های ارزیابی پیشرفته", "اعلان توصیه‌های مبتنی بر داده‌های معاملاتی", "./notification-icons/01-evaluation.png"],
+        ["psychology", "توصیه‌های روانشناسی ترید", "اعلان نکته‌ها و اقدام‌های پیشنهادی رفتاری", "./notification-icons/02-psychology.png"],
+        ["motivation", "پیام‌های انگیزشی کتابخانه", "پیام‌های انگیزشی زمان‌بندی‌شده", "./notification-icons/05-motivation.png"]
+    ];
+    const toggle = key => setSettings(prev => { const next = nmTextNotifSaveSettings({ ...prev, [key]: !(prev[key] !== false) }); return next; });
+    return RE("section", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+        RE("button", { type: "button", onClick: () => setExpanded(v => !v), className: "w-full flex items-center justify-between", "aria-expanded": expanded },
+            RE("span", { className: "flex items-center gap-2 text-[13px] font-bold", style: { color: "var(--text-primary)" } }, "🔔", "نوتیفیکیشن‌های متنی"),
+            RE("span", { className: "text-[10px]", style: { color: "var(--accent-gold)" } }, expanded ? "بستن ▲" : "تنظیم دسته‌ها ▼")),
+        expanded && RE("div", { className: "mt-3" },
+            RE("p", { className: "text-[10px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "هر دسته مستقل است. خاموش‌کردن یک دسته، اعلان‌های متنی همان دسته را در نسخه وب و APK متوقف می‌کند؛ تنظیم زنگ هر رویداد همچنان جداگانه باقی می‌ماند."),
+            rows.map(([key, title, desc, icon]) => RE("div", { key, className: "flex items-center gap-3 rounded-xl p-2.5 mb-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+                RE("img", { src: icon, alt: "", className: "w-10 h-10 rounded-lg object-contain shrink-0" }),
+                RE("div", { className: "flex-1 min-w-0" }, RE("div", { className: "text-[11px] font-semibold", style: { color: "var(--text-primary)" } }, title), RE("div", { className: "text-[9px] leading-4 mt-0.5", style: { color: "var(--text-muted)" } }, desc)),
+                RE("button", { type: "button", role: "switch", "aria-checked": settings[key] !== false, "aria-label": title, onClick: () => toggle(key), className: "rounded-full px-1 flex items-center shrink-0", style: { width: 42, height: 24, background: settings[key] !== false ? "var(--accent-gold)" : "var(--border-2)", justifyContent: settings[key] !== false ? "flex-end" : "flex-start" } },
+                    RE("span", { className: "rounded-full", style: { width: 18, height: 18, background: "var(--bg-page)" } }))))));
+}
+
 const NM_MOTIVATION_KEY = "namello_motivational_messages_v1";
 const NM_MOTIVATION_SETTINGS_KEY = "namello_motivational_settings_v1";
 const NM_MOTIVATION_EVT = "namello-motivational-settings";
@@ -6343,12 +6429,12 @@ function nmMotivationSaveMessages(v) { try { localStorage.setItem(NM_MOTIVATION_
 function nmMotivationSaveSettings(v) { try { localStorage.setItem(NM_MOTIVATION_SETTINGS_KEY, JSON.stringify(v)); } catch (e) {} try { window.dispatchEvent(new CustomEvent(NM_MOTIVATION_EVT)); } catch (e) {} }
 async function nmMotivationRequestPermission() { if (typeof Notification === "undefined") return false; if (Notification.permission === "granted") return true; if (Notification.permission === "denied") return false; try { return (await Notification.requestPermission()) === "granted"; } catch (e) { return false; } }
 async function nmShowMotivationalNotification(text) {
-    const body = String(text || "").trim(); if (!body) return false;
+    const body = String(text || "").trim(); if (!body || !nmTextNotifEnabled("motivation")) return false;
     if (typeof Notification === "undefined" || Notification.permission !== "granted" || !("serviceWorker" in navigator)) return false;
     try {
         const reg = await navigator.serviceWorker.ready;
         const tag = "namello-motivation-" + Date.now();
-        await reg.showNotification("پیام انگیزشی Namello", { body, icon:"./icon-journal.png", badge:"./icon-journal-192.png", tag, vibrate:[200,100,200], silent:false, requireInteraction:false, data:{kind:"motivation"} });
+        await reg.showNotification("پیام انگیزشی Namello", { body, icon:NM_TEXT_NOTIF_ART.motivation, badge:"./icon-192.png", tag, vibrate:[200,100,200], silent:false, requireInteraction:false, data:{kind:"motivation",category:"motivation"} });
         setTimeout(() => { try { reg.getNotifications({tag}).then(ns => ns.forEach(n => n.close())).catch(()=>{}); } catch(e){} }, 20000);
         return true;
     } catch (e) { return false; }
@@ -8125,7 +8211,6 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},showAdvanced?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))),
      showAdvanced&&React.createElement("div",{className:"pt-2"},
        React.createElement("div",{className:"text-[9px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},window.nmDashboardAccountSummary(selectedBaseAccounts,baseAccounts)),
-       RE(NmDashboardAIArm,{mode:"advanced",trades:filtered}),
        RE(NmAdvancedSection,{number:"۱",title:"منبع ارزیابی و حساب‌های مبنا",subtitle:"انتخاب Journal/Statement و دامنه حساب‌های واردشده به محاسبات",accent:"#F59E0B",help:NM_ADVANCED_SECTION_GUIDES.source},baseAccountPanel),
        RE(NmAdvancedSection,{number:"۲",title:"فیلترهای ارزیابی",subtitle:"محدودکردن نمونه بر اساس بازه، نشست، سیستم و جهت معامله",accent:"#06B6D4",help:NM_ADVANCED_SECTION_GUIDES.filters},filterPanel),
        RE(NmAdvancedSection,{number:"۳",title:"شاخص‌ها و جزئیات معاملات",subtitle:"KPI، Equity Curve، Session/Setup، Discipline، Plan و Drill-down",accent:"#10B981",help:NM_ADVANCED_SECTION_GUIDES.widgets},React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id])))),
@@ -8138,6 +8223,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
              React.createElement("button",{onClick:onExportAdvancedExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#8B5CF6",color:"#fff"}},"Excel ارزیابی پیشرفته"),
              React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته")))))
        ),
+       RE(NmDashboardAIArm,{mode:"advanced",trades:filtered}),
        React.createElement(PsychologyLayer,{journalTrades:closed,statementTrades:statementTrades,source:psychologyDataSource,setSource:setPsychologyDataSource,psychOptions:psychOptions,activeAccount:activeAccount,statementImporting:statementImporting,statementImportError:statementImportError,onImportDashboardStatementFiles:onImportDashboardStatementFiles,onClearDashboardStatement:onClearDashboardStatement,dashboardStatementTrades:dashboardStatementTrades,baseAccounts:baseAccounts,selectedBaseAccounts:selectedBaseAccounts,onToggleBaseAccount:onToggleBaseAccount,onSelectBaseType:onSelectBaseType,onToggleAllBaseAccounts:onToggleAllBaseAccounts,accountTypeOf:accountTypeOf}),
        RE(NmPortfolioView,{accounts:selectedBaseAccounts,accountTypes,activeAccount,accountTradesMap}),
 React.createElement("section",{className:"rounded-2xl mt-3 mb-3",style:nmDashBoxStyle(NM_DASH_ACCENT.exp)},
@@ -9800,16 +9886,16 @@ function App() {
                 return;
             }
             if (!wasActive && ev.active && ev.alarmStart)
-                fireNotification(`شروع ${ev.name}`, `${ev.kind} «${ev.name}» شروع شد.`);
+                fireNotification(`شروع ${ev.name}`, `${ev.kind} «${ev.name}» شروع شد.`, "sessions");
             if (wasActive && !ev.active && ev.alarmEnd)
-                fireNotification(`پایان ${ev.name}`, `${ev.kind} «${ev.name}» به پایان رسید.`);
+                fireNotification(`پایان ${ev.name}`, `${ev.kind} «${ev.name}» به پایان رسید.`, "sessions");
             prev[ev.key] = ev.active;
         });
     }, [now.minutesOfDay]);
     useEffect(() => {
         const fired = newsAlarmRef.current;
         const nowMs = Date.now();
-        const LEAD_MS = 5 * 60 * 1000;
+        const LEAD_MS = 30 * 1000;
         newsEvents.forEach(ev => {
             if (!ev.alarmStart || fired[ev.id])
                 return;
@@ -9817,14 +9903,13 @@ function App() {
             if (isNaN(evMs))
                 return;
             const msUntil = evMs - nowMs;
-            // بین ۵ دقیقه‌ی مونده تا اعلام و خودِ لحظه‌ی اعلام (نه بعدش) هشدار می‌ده؛ اگه کاربر
-            // درست همون بازه رو از دست داده باشه (مثلاً برنامه یه لحظه بسته بوده)، هنوز تا ۹۰ ثانیه
-            // بعد از لحظه‌ی اعلام هم به‌عنوان جبران هشدار می‌ده.
+            // دقیقاً ۳۰ ثانیه پیش از خبر هشدار می‌دهد؛ اگر برنامه در همان بازه موقتاً
+            // متوقف بوده باشد، تا ۹۰ ثانیه پس از زمان خبر نیز هشدار جبرانی می‌دهد.
             if ((msUntil <= LEAD_MS && msUntil > -90000)) {
                 if (msUntil > 0)
-                    fireNotification(`\u06F5 \u062F\u0642\u06CC\u0642\u0647 \u062A\u0627 \u062E\u0628\u0631: ${ev.title}`, `\u062E\u0628\u0631 \u00AB${ev.title}\u00BB (${ev.currency}) \u062A\u0627 \u06F5 \u062F\u0642\u06CC\u0642\u0647 \u062F\u06CC\u06AF\u0631 \u0627\u0639\u0644\u0627\u0645 \u0645\u06CC\u200C\u0634\u0648\u062F.`);
+                    fireNotification(`\u06F3\u06F0 \u062B\u0627\u0646\u06CC\u0647 \u062A\u0627 \u062E\u0628\u0631: ${ev.title}`, `\u062E\u0628\u0631 \u00AB${ev.title}\u00BB (${ev.currency}) \u062A\u0627 \u06F3\u06F0 \u062B\u0627\u0646\u06CC\u0647 \u062F\u06CC\u06AF\u0631 \u0627\u0639\u0644\u0627\u0645 \u0645\u06CC\u200C\u0634\u0648\u062F.`, "news");
                 else
-                    fireNotification(`\u062E\u0628\u0631: ${ev.title}`, `\u062E\u0628\u0631 \u00AB${ev.title}\u00BB (${ev.currency}) \u0647\u0645‌\u0627\u06A9\u0646\u0648\u0646 \u0627\u0639\u0644\u0627\u0645 \u0634\u062F.`);
+                    fireNotification(`\u062E\u0628\u0631: ${ev.title}`, `\u062E\u0628\u0631 \u00AB${ev.title}\u00BB (${ev.currency}) \u0647\u0645‌\u0627\u06A9\u0646\u0648\u0646 \u0627\u0639\u0644\u0627\u0645 \u0634\u062F.`, "news");
                 fired[ev.id] = true;
             }
         });
@@ -9875,10 +9960,12 @@ function App() {
     // حافظه خارج کنه، نه فقط پس‌زمینه، هیچ نوتیفی نمی‌تونه فایر بشه — برای بهترین قابلیت‌اطمینان،
     // مرورگری که Namello توش بازه رو از بهینه‌سازی باتری مستثنی کن (دقیقاً مثل نکته‌ی بخش
     // «بازگشت به Namello»).
-    function fireNotification(title, body) {
+    function fireNotification(title, body, category = "sessions") {
+        if (!nmTextNotifEnabled(category)) return;
+        const icon = NM_TEXT_NOTIF_ART[category] || "./icon-192.png";
         try {
             if (window.NamelloNative && typeof window.NamelloNative.showNotification === "function") {
-                window.NamelloNative.showNotification(String(title), String(body));
+                window.NamelloNative.showNotification(String(title), { body: String(body), icon, badge: "./icon-192.png", data: { kind: category, category } });
             }
         } catch (e) {}
         if (popupAlarmEnabled)
@@ -9888,7 +9975,7 @@ function App() {
         if (typeof Notification === "undefined" || Notification.permission !== "granted")
             return;
         const tag = "namello-evt-" + Date.now();
-        const show = (reg) => reg.showNotification(title, { body, tag, vibrate: [200, 100, 200, 100, 200, 100, 200, 100, 200], requireInteraction: false, silent: false });
+        const show = (reg) => reg.showNotification(title, { body, tag, icon, badge: "./icon-192.png", data: { kind: category, category }, vibrate: [200, 100, 200, 100, 200, 100, 200, 100, 200], requireInteraction: false, silent: false });
         try {
             if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                 navigator.serviceWorker.ready.then(reg => {
@@ -12902,6 +12989,7 @@ function App() {
             RE(NmLayerHeading,{title:t("settings_title"),Icon:SettingsIcon}),
             React.createElement("div", { className: "text-[10px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "پروفایل برای هویت و تنظیمات شخصی؛ تمپلت برای ذخیره و بازگردانی مجموعه تنظیمات سفارشی برنامه."),
             React.createElement("div", { className: "px-4 mt-4 nm-settings-stack" },
+            RE(NmNotificationTextSettings, null),
             RE(NmSettingsAutoCollapse, null,
             React.createElement("div", { className: "rounded-2xl p-3 mb-3 nm-profile-card", style: { background: "color-mix(in srgb, #60A5FA 5%, var(--bg-card))", border: "1px solid color-mix(in srgb, #60A5FA 26%, var(--border-1))", borderRight: "4px solid #60A5FA", width: "100%" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "profile" ? "" : "profile"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
@@ -12976,7 +13064,6 @@ function App() {
                 RE(NmBackupCard, { showToast }),
                 RE(NmStorageCard, { showToast })
             ),
-            RE(NmCustomFieldsManager, null),
                 RE(NmCollapsible, { title: "فونت برنامه", subtitle: "برای جمع/باز کردن این بخش کلیک کنید", icon: "🔤", defaultOpen: false },
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("h3", { className: "text-[13px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, "فونت برنامه"),RE(NmHeaderDots,{title:"فونت برنامه"}),
@@ -12985,7 +13072,7 @@ function App() {
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("button", { onClick: () => toggleSettingsSection("quickLaunch"), className: "flex items-center gap-1.5" },
-                        React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "\u062F\u06A9\u0645\u0647\u200C\u06CC \u0634\u0646\u0627\u0648\u0631 \u0627\u062C\u0631\u0627\u06CC \u0633\u0631\u06CC\u0639 MT5/\u062A\u0631\u06CC\u062F\u06CC\u0646\u06AF\u200C\u0648\u06CC\u0648"),RE(NmHeaderDots,{title:"اجرای سریع MT5/TradingView"}),
+                        React.createElement("h3", { className: "text-[13px] font-semibold", style: { color: "var(--text-primary)" } }, "\u062F\u06A9\u0645\u0647\u200C\u06CC \u0634\u0646\u0627\u0648\u0631 \u0627\u062C\u0631\u0627\u06CC \u0633\u0631\u06CC\u0639 MT5/TradingView"),RE(NmHeaderDots,{title:"اجرای سریع MT5/TradingView"}),
                         React.createElement("span", { className: "nm-settings-chevron", "aria-hidden": true }, openSettingsSection.quickLaunch ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),),
                 openSettingsSection.quickLaunch && React.createElement("p", { className: "text-[11px] leading-5 mb-3", style: { color: "var(--text-muted)" } }, "دو دکمه‌ی شناور جدا روی صفحه ظاهر می‌شن: یکی برای MT5 و یکی برای TradingView (بدون منوی واسط). با لمس و نگه‌داشتنِ هرکدوم می‌تونی جاش رو هر جای صفحه ببری؛ جایگاه هرکدوم جدا ذخیره می‌شه. با یک ضربه‌ی ساده (بدون کشیدن)، همون اپ باز می‌شه."),
                 React.createElement("div", { className: "rounded-lg p-2.5 mb-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
@@ -12999,7 +13086,7 @@ function App() {
                     React.createElement("button", { onClick: () => persistQuickLaunchSettings({ ...quickLaunchSettings, mt5PosXPercent: null, mt5PosYPercent: null }), className: "w-full py-1.5 rounded-lg text-[11px]", style: { background: "var(--bg-page)", color: "var(--text-secondary)" } }, "بازنشانی جایگاه دکمه‌ی MT5")),
                 React.createElement("div", { className: "rounded-lg p-2.5 mb-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
                     React.createElement("div", { className: "flex items-center justify-between mb-1.5" },
-                        React.createElement("span", { className: "text-[12px]", style: { color: "var(--text-primary)" } }, "\uD83D\uDCC8 \u062A\u0631\u06CC\u062F\u06CC\u0646\u06AF\u200C\u0648\u06CC\u0648 (TradingView)"),
+                        React.createElement("span", { className: "text-[12px]", style: { color: "var(--text-primary)" } }, "📈 TradingView"),
                         React.createElement("button", { onClick: () => persistQuickLaunchSettings({ ...quickLaunchSettings, tvEnabled: !quickLaunchSettings.tvEnabled }), className: "px-2.5 py-1 rounded-full text-[10px]", style: { background: quickLaunchSettings.tvEnabled ? "#34D39922" : "var(--bg-page)", color: quickLaunchSettings.tvEnabled ? "#34D399" : "var(--text-muted)" } }, quickLaunchSettings.tvEnabled ? "فعال" : "غیرفعال")),
                     React.createElement("label", { className: "text-[10px] block mb-1", style: { color: "var(--text-muted)" } }, "package name اپ نصب‌شده روی گوشی"),
                     React.createElement("input", { type: "text", value: quickLaunchSettings.tvPackage, onChange: e => persistQuickLaunchSettings({ ...quickLaunchSettings, tvPackage: e.target.value }), className: "w-full bg-transparent outline-none text-[12px] mono mb-2", style: { color: "var(--accent-gold)", fontFamily: "JetBrains Mono, monospace" }, placeholder: "com.tradingview.tradingviewapp" }),
@@ -13165,6 +13252,7 @@ function App() {
                         activeAccount),
                     React.createElement("button", { onClick: () => setShowAccSettings(false) },
                         React.createElement(X, { size: 18, color: "var(--text-muted)" }))),
+                RE(NmCustomFieldsManager, null),
                 React.createElement(Field, { label: "\u0628\u0631\u0648\u06A9\u0631" },
                     React.createElement("select", { value: accSettingsForm.broker, onChange: e => e.target.value === "__add__" ? addToList("broker").then(v => v && setAccSettingsForm(f => ({ ...f, broker: v }))) : setAccSettingsForm({ ...accSettingsForm, broker: e.target.value }), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } },
                         React.createElement("option", { value: "", style: { background: "var(--bg-card2)" } }, "\u0627\u0646\u062A\u062E\u0627\u0628 \u06A9\u0646..."),
