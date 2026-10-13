@@ -22,8 +22,8 @@ test('session clock is larger and has a thicker session ring with more legible l
   assert.match(html, /max-w-\[380px\]/);
   assert.match(html, /const size = 380, cx = size \/ 2, cy = size \/ 2;/);
   assert.match(html, /const sessR = 133, sessW = 28;/);
-  assert.match(html, /lp = polar\(cx, cy, 103, a\)/);
-  assert.match(html, /fontSize: major \? 16 : 14/);
+  assert.match(html, /lp = polar\(cx, cy, 201, a\)/);
+  assert.match(html, /fontSize: major \? 21 : 18/);
   assert.match(html, /fontSize: "10", fontWeight: "700"/);
 });
 
@@ -35,6 +35,7 @@ test('custom trade-field manager is not in global Settings and is inside Journal
   assert.ok(managerAt > journalSettings, 'manager belongs to Journal account settings');
   assert.ok(managerAt > settingsArea, 'manager must not be rendered in the global Settings layer');
   assert.match(html.slice(managerAt, managerAt + 100), /RE\(NmCustomFieldsManager, null\)/);
-  assert.match(html, /فعال‌سازی برای ثبت ورود/);
-  assert.match(html, /فعال‌سازی برای نتیجه معامله/);
+  assert.match(html, /فرم فعال ژورنال/);
+  assert.match(html, /ثبت ورود/);
+  assert.match(html, /ثبت نتیجه معامله/);
 });

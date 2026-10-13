@@ -30,13 +30,11 @@ test('session and news notifications respect global category toggles and include
   }
 });
 
-test('advanced and psychology recommendation cards are appended after their section content and can notify once per day', () => {
-  const adv = app.indexOf('RE(NmDashboardAIArm,{mode:"advanced",trades:filtered})');
-  const advExport = app.indexOf('title:"خروجی ارزیابی پیشرفته"', app.indexOf('function NmDashboard('));
-  assert.ok(adv > advExport, 'advanced recommendation card should follow the advanced evaluation sections');
-  const psych = app.indexOf('RE(NmDashboardAIArm, { mode:"psych", trades })');
-  const results = app.indexOf('            results,', app.indexOf('function PsychologyLayer('));
-  assert.ok(psych > results, 'psychology recommendation card should follow psychology findings');
+test('advanced and psychology recommendation cards stay in their sections and are the notification source', () => {
+  assert.ok(app.includes('RE(NmDashboardRecommendations,{title:"توصیه",recommendations:advancedRecommendations,accent:"#F59E0B"}'));
+  assert.ok(app.includes('RE(NmDashboardRecommendations, { title:"توصیه", recommendations, accent:"#14B8A6" }'));
+  assert.equal(app.includes('RE(NmDashboardAIArm,{mode:"advanced",trades:filtered}'), false);
+  assert.equal(app.includes('RE(NmDashboardAIArm, { mode:"psych", trades }'), false);
   assert.ok(app.includes('nmSendTextCategoryNotification(category'));
   assert.ok(app.includes('namello_text_notif_sent_'));
 });
