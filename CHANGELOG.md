@@ -1,3 +1,11 @@
+# Namello 1.0.3 — Version Code 70
+
+- ساعت نشست‌ها بزرگ‌تر و قطورتر شد؛ ارقام ساعت به داخل حلقه منتقل شدند و اندازهٔ دقیقه‌ها و عنوان قطاع‌ها افزایش یافت تا هم‌پوشانی کاهش یابد.
+- راهنمای فعال‌سازی پیکربندی‌های ذخیره‌شدهٔ فیلدهای سفارشی ژورنال روشن‌تر شد و دکمه‌ها برای هر فرم مستقل مشخص شدند.
+- عنوان بخش توصیه‌ها در ارزیابی پیشرفته و روانشناسی ترید یکسان شد.
+- تنظیمات مستقل نوتیفیکیشن‌های متنی، آیکون‌های پنج دسته و زمان‌بندی هشدار اخبار ۳۰ ثانیه پیش از رویداد در وب/APK حفظ و آزمون شدند.
+- آزمون‌های خودکار، بررسی نسخه، ساخت وب و TypeScript typecheck اجرا شدند. ساخت و آزمایش APK روی دستگاه واقعی هنوز لازم است.
+
 ## 1.0.1 (Version Code 68) — versioned source refresh
 - Synced version metadata across the source, PWA manifests, service worker, and package metadata.
 - Preserved the existing backup/restore safeguards, Android Back handling, custom-field profiles, notification scheduling/artwork, and weekly icon assets.
