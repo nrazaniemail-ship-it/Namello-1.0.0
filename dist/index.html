@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.3</title>
+<title>Namello 1.0.4</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -65,6 +65,8 @@
         بسته به تم به شید خوانا می‌برند و رنگ پس‌زمینه‌ها/نشان‌ها (تینت‌های کم‌رنگ) را تغییر نمی‌دهند. */
   :root { --c-success: #34D399; --c-danger: #F87171; --c-warning: #FBBF24; --c-info: #60A5FA; --c-accent2: #A78BFA; }
   html[data-theme="light"] { --c-success: #047857; --c-danger: #B91C1C; --c-warning: #92400E; --c-info: #1D4ED8; --c-accent2: #6D28D9; }
+  html:not([data-theme="light"]) { --nm-clock-hour-text: #FFFFFF; }
+  html[data-theme="light"] { --nm-clock-hour-text: #111827; }
   html[data-theme="light"] [style^="color: rgb(248, 113, 113)"], html[data-theme="light"] [style*="; color: rgb(248, 113, 113)"] { color: #B91C1C !important; }
   html[data-theme="light"] [style^="color: rgb(239, 68, 68)"], html[data-theme="light"] [style*="; color: rgb(239, 68, 68)"] { color: #B91C1C !important; }
   html[data-theme="light"] [style^="color: rgb(244, 63, 94)"], html[data-theme="light"] [style*="; color: rgb(244, 63, 94)"] { color: #BE123C !important; }
@@ -100,6 +102,8 @@
   .nm-unified-export-btn.nm-final-save-btn { background: #FEF3C7 !important; color: #92400E !important; border: 1px solid #FDE68A !important; font-weight: 600; }
   .nm-unified-export-btn.nm-final-save-btn:hover { background: #FDE68A !important; }
   html, body { background: var(--bg-page); margin: 0; padding: 0; }
+  .nm-journal-custom-mode > :nth-child(n+3) { display: none !important; }
+  .nm-journal-custom-mode .nm-custom-journal-view { display: block !important; }
   * { font-family: var(--app-font); box-sizing: border-box; }
   #root { min-height: 100vh; }
   #boot-error { display: none; direction: ltr; text-align: left; color: #F87171; background: #1A0B0B; padding: 16px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; line-height: 1.6; min-height: 100vh; }
@@ -146,7 +150,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.3…</div>
+<div id="boot-status">Loading Namello 1.0.4…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -1312,7 +1316,7 @@ function SessionClock({ minutesOfDay, seconds = 0, sessions, killzones, silverbu
             const p1 = polar(cx, cy, major ? 170 : 172, a), p2 = polar(cx, cy, 179, a), lp = polar(cx, cy, 201, a);
             return (React.createElement("g", { key: h },
                 React.createElement("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: major ? "#4A5260" : "#333A44", strokeWidth: major ? 1.5 : 1 }),
-                React.createElement("text", { x: lp.x, y: lp.y, fill: "#86EFAC", fontSize: major ? 28 : 24, fontWeight: "800", fontFamily: "JetBrains Mono, monospace", textAnchor: "middle", dominantBaseline: "middle" }, pad2(h))));
+                React.createElement("text", { x: lp.x, y: lp.y, fill: "var(--nm-clock-hour-text)", fontSize: major ? 21 : 18, fontWeight: "800", fontFamily: "JetBrains Mono, monospace", textAnchor: "middle", dominantBaseline: "middle" }, pad2(h))));
         }),
         minuteTicks.map(m => {
             const a = (m / 60) * 360;
@@ -2993,6 +2997,17 @@ function NmDashboardAIArm({ mode, trades, recommendations = [] }) {
       if (avgWin && avgLoss) findings.push(`میانگین برد ${avgWin.toFixed(2)} و میانگین باخت ${avgLoss.toFixed(2)} است.`);
       actions.push(winRate < 45 ? "گروه‌های معاملاتی را بر اساس سیستم، نشست و روند تفکیک کن؛ نرخ برد به‌تنهایی برای تصمیم کافی نیست." : "گروه‌های سودآور را با تعداد نمونه و میانگین سود/زیان مقایسه کن.");
       actions.push(enough ? "برای بررسی پایداری، نتیجه را در بازه‌های زمانی جداگانه و با هزینه‌های معامله مقایسه کن." : "نمونه هنوز محدود است؛ از نتیجه‌گیری قطعی و تغییر بزرگ در سیستم خودداری کن.");
+    } else if (mode === "all") {
+      const ratio = losses.length && avgLoss ? avgWin / Math.abs(avgLoss) : null;
+      const recent = nums.slice(-8);
+      const recentPnl = recent.reduce((a,b)=>a+b,0);
+      headline = total > 0 ? "برآیند کل داشبورد در نمونه فعلی مثبت است؛ تمرکز بعدی باید روی پایداری و کنترل ریسک باشد." : total < 0 ? "برآیند کل داشبورد در نمونه فعلی منفی است؛ علت زیان را در بخش‌های مختلف پیدا و قبل از افزایش ریسک اصلاح کن." : "برآیند کل داشبورد نزدیک به صفر است؛ برای نتیجه‌گیری قطعی نمونه بیشتری لازم است.";
+      findings.push(`کل نمونه: ${nums.length} معامله بسته‌شده؛ P&L ${total.toFixed(2)}؛ نرخ برد ${winRate.toFixed(1)}٪.`);
+      findings.push(ratio ? `نسبت میانگین برد به باخت ${ratio.toFixed(2)} است.` : "برای نسبت میانگین برد به باخت، باید هم برد و هم باخت در نمونه وجود داشته باشد.");
+      findings.push(`نتیجه ${recent.length} معامله اخیر: ${recentPnl.toFixed(2)}.`);
+      actions.push(recommendations?.[0] || (winRate < 45 ? "گروه‌های ضعیف را بر اساس سیستم، نشست و شرایط بازار جدا و بازبینی کن." : "گروه‌های سودآور را با نمونه کافی و ریسک ثابت مقایسه کن."));
+      actions.push(enough ? "قبل از هر تغییر در حجم، Drawdown، Expectancy و ثبات عملکرد را در چند زیرنمونه بررسی کن." : "نمونه هنوز محدود است؛ اندازه ریسک را ثابت نگه دار و از تغییر بزرگ در سیستم خودداری کن.");
+      actions.push(recentPnl < 0 ? "عملکرد اخیر ضعیف شده؛ قبل از معامله بعدی یک مرور کوتاه از Plan، روانشناسی و شرایط بازار انجام بده." : "عملکرد اخیر را با کیفیت اجرای Plan و رفتار معاملاتی تطبیق بده تا بهبود واقعی از شانس تفکیک شود.");
     } else if (mode === "advanced") {
       headline = total > 0 && winRate >= 45 ? "کیفیت نتیجه امیدوارکننده است؛ پایداری اجرا باید تأیید شود." : "اولویت فعلی، کنترل ریسک و پیدا کردن علت عملکرد نمونه است.";
       findings.push(`P&L: ${total.toFixed(2)}؛ نرخ برد: ${winRate.toFixed(1)}٪؛ معاملات بسته‌شده: ${nums.length}.`);
@@ -3057,6 +3072,14 @@ function nmAdvancedRecommendations(trades) {
 }
 function NmDashboardRecommendations({ title, recommendations, accent }) {
     const items = Array.isArray(recommendations) ? recommendations.filter(Boolean).slice(0, 6) : [];
+    React.useEffect(() => {
+        const isAdvanced = title === "توصیه" && accent === "#F59E0B";
+        const isPsychology = title === "توصیه" && accent === "#14B8A6";
+        if ((!isAdvanced && !isPsychology) || !items.length) return;
+        const category = isAdvanced ? "evaluation" : "psychology";
+        const recommendation = items[0];
+        nmSendTextCategoryNotification(category, isAdvanced ? "توصیه ارزیابی پیشرفته Namello" : "توصیه روانشناسی ترید Namello", recommendation, `${category}|${recommendation}`);
+    }, [title, accent, items.join("|")]);
     return React.createElement("section", { className: "rounded-xl p-3 mb-3", style: { background: `color-mix(in srgb, ${accent} 7%, var(--bg-card))`, border: `1px solid color-mix(in srgb, ${accent} 30%, var(--border-1))` } },
         React.createElement("div", { className: "flex items-center gap-2 mb-2" },
             React.createElement("span", { className: "text-[12px]" }, "💡"),
@@ -3135,7 +3158,6 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
             sourcePanel,
             results,
             RE(NmDashboardRecommendations, { title:"توصیه", recommendations, accent:"#14B8A6" }),
-            RE(NmDashboardAIArm, { mode:"psych", trades, recommendations })
         )
     );
 }
@@ -3497,12 +3519,13 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.3";
-const NM_VERSION_CODE = 70;
+const NM_VERSION_NAME = "1.0.4";
+const NM_VERSION_CODE = 71;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_029_NOTE = "نسخه 1.0.29: یکدست‌سازی شماره نسخه، کد نسخه و کش آفلاین در بسته PWA؛ قابلیت‌های هوش مصنوعی نسخه قبل حفظ شده‌اند.";
-const NM_VERSION_DATE = "انتشار یکپارچه 1.0.0؛ شامل آخرین اصلاحات ژورنال، پشتیبان‌گیری و بازگشت اندروید";
+const NM_VERSION_DATE = "انتشار نسخه 1.0.4 — 2026-10-13";
 const NM_CHANGELOG = [
+    "نسخه 1.0.4: آیکون‌های نوتیفیکیشن‌های متنی به مسیر صحیح assets متصل شدند و خطای Script error ناشی از assetهای گمشده رفع شد؛ ساعت‌های ساعت‌شمار نشست‌ها کمی کوچک‌تر و در تم تیره سفید و در تم روشن تیره و خوانا شدند؛ تحلیل هوش مصنوعی به یک بخش مستقل پس از نمای پرتفوی و چندحسابی منتقل شد و از تحلیل آماری، ارزیابی پیشرفته و روانشناسی ترید حذف شد؛ کارت «توصیه» منبع مستقیم اعلان‌های ارزیابی پیشرفته و روانشناسی است؛ انتخاب فرم سفارشی ژورنال اکنون واقعاً ظاهر ثبت ورود و ثبت نتیجه را تغییر می‌دهد و فیلدهای سفارشی نتیجه نیز ذخیره می‌شوند.",
     "نسخه 1.0.3: ساعت نشست‌ها بزرگ‌تر و قطورتر شد و ارقام ساعت به داخل صفحه منتقل شدند تا با دقیقه‌ها تداخل نداشته باشند؛ فعال‌سازی پیکربندی فیلدهای سفارشی واضح‌تر شد؛ عنوان توصیه‌ها در هر دو بخش یکسان شد. نوتیفیکیشن اخبار ۳۰ ثانیه پیش از رویداد، پنج آیکون دسته‌بندی و کلیدهای مستقل اعلان‌ها برای وب و APK حفظ و بررسی شدند.",
     "نسخه 1.0.2: ثبت Service Worker با مسیر و scope صریح انجام می‌شود؛ فراخوانی دستی update روی رجیستری قدیمی حذف شد تا خطای Unhandled promise rejection رخ ندهد.",
     "نسخه 1.0.1: نسخه‌بندی برنامه همگام‌سازی شد؛ اصلاحات موجود مربوط به پشتیبان اندروید، دکمه بازگشت، پروفایل‌های فیلد سفارشی، اعلان‌ها و آیکون‌های هفتگی حفظ شدند. آزمون‌های خودکار و typecheck اجرا شدند؛ آزمایش APK روی دستگاه واقعی جداگانه لازم است.",
@@ -5609,6 +5632,34 @@ function NmCustomFieldsFormSection({ values, onChange, kind = "entry" }) {
             d.type === "checkbox" && RE("button", { type: "button", onClick: () => set(d.id, !v[d.id]), className: "px-4 py-2 rounded-lg text-[12px]", style: { background: v[d.id] ? nmTint(15) : "var(--bg-card)", color: v[d.id] ? "var(--accent-gold)" : "var(--text-secondary)", border: "1px solid " + (v[d.id] ? nmTint(40) : "var(--border-2)") } }, v[d.id] ? "✓ بله" : "خیر"),
             d.type === "select" && RE("div", { className: "flex flex-wrap gap-1.5" }, (d.options || []).map(opt => RE("button", { key: opt, type: "button", onClick: () => set(d.id, opt), className: "px-3 py-1.5 rounded-lg text-[12px]", style: { background: v[d.id] === opt ? nmTint(15) : "var(--bg-card)", color: v[d.id] === opt ? "var(--accent-gold)" : "var(--text-secondary)", border: "1px solid " + (v[d.id] === opt ? nmTint(40) : "var(--border-2)") } }, opt))))));
 }
+
+function useJournalFormMode(kind) {
+ const [state,setState]=React.useState({mode:"namello",profileName:""});
+ React.useEffect(()=>{let alive=true; const load=async()=>{const key=kind==="result"?NM_CF_RESULT_MODE_KEY:NM_CF_ENTRY_MODE_KEY; const v=await nmCfGetValue(key,{mode:"namello",profileName:""}); if(alive)setState({mode:v.mode||"namello",profileName:v.profileName||""});}; load(); const on=()=>load(); window.addEventListener("namello-customfields-changed",on); return()=>{alive=false;window.removeEventListener("namello-customfields-changed",on)}},[kind]);
+ return state;
+}
+function NmCustomJournalEntryView({form,setForm,pairs,appLanguage,profileName,onSave}){
+ const defs=useCustomFieldDefs("entry"); const pairOptions=pairs&&pairs.length?pairs:["XAUUSD"]; const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+ return RE("div",{className:"nm-custom-journal-view rounded-2xl p-3 mb-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
+  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"color-mix(in srgb, var(--accent-gold) 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, var(--accent-gold) 28%, var(--border-1))"}},RE("div",{className:"text-[12px] font-extrabold",style:{color:"var(--accent-gold)"}},"فرم سفارشی ثبت ورود"),RE("div",{className:"text-[9px] leading-5 mt-1",style:{color:"var(--text-muted)"}},profileName?`فرم فعال: ${profileName}`:"فرم سفارشی فعال")),
+  RE("div",{className:"grid grid-cols-2 gap-2"},RE(Field,{label:"تاریخ"},RE("input",{type:"date",value:form.date||"",onChange:e=>set("date",e.target.value),className:"w-full bg-transparent outline-none text-sm",style:{color:"var(--text-primary)"}})),RE(Field,{label:"ساعت (NY)"},RE("input",{type:"time",value:form.time||"",onChange:e=>set("time",e.target.value),className:"w-full bg-transparent outline-none text-sm",style:{color:"var(--text-primary)"}}))),
+  RE(Field,{label:"جفت‌ارز"},RE("select",{value:form.pair||pairOptions[0],onChange:e=>set("pair",e.target.value),className:"w-full bg-transparent outline-none text-sm",style:{color:"var(--text-primary)"}},pairOptions.map(x=>RE("option",{key:x,value:x,style:{background:"var(--bg-card2)"}},x)))),
+  RE(Field,{label:"جهت معامله"},RE("div",{className:"grid grid-cols-2 gap-2"},RE("button",{type:"button",onClick:()=>set("direction","buy"),className:"py-2.5 rounded-lg text-sm font-semibold",style:{background:form.direction==="buy"?"#34D39922":"var(--bg-card)",color:form.direction==="buy"?"#34D399":"var(--text-secondary)",border:"1px solid "+(form.direction==="buy"?"#34D39966":"var(--border-2)")}},"خرید"),RE("button",{type:"button",onClick:()=>set("direction","sell"),className:"py-2.5 rounded-lg text-sm font-semibold",style:{background:form.direction==="sell"?"#F8717122":"var(--bg-card)",color:form.direction==="sell"?"#F87171":"var(--text-secondary)",border:"1px solid "+(form.direction==="sell"?"#F8717166":"var(--border-2)")}},"فروش"))),
+  RE("div",{className:"grid grid-cols-2 gap-2"},RE(Field,{label:"قیمت ورود"},RE("input",{type:"number",inputMode:"decimal",value:form.entry||"",onChange:e=>set("entry",e.target.value),className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}})),RE(Field,{label:"حجم (لات)"},RE("input",{type:"text",inputMode:"decimal",value:form.lot||"",onChange:e=>set("lot",e.target.value),className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}}))),
+  defs.length?RE(NmCustomFieldsFormSection,{values:form.customFields||{},onChange:v=>set("customFields",v),kind:"entry"}):RE("div",{className:"rounded-xl p-3 mb-3 text-[10px]",style:{background:"var(--bg-card)",color:"var(--text-muted)",border:"1px solid var(--border-1)"}},"این فرم هنوز فیلد سفارشی ندارد. از تنظیمات فیلد اضافه کن."),
+  RE("button",{type:"button",onClick:onSave,className:"w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2",style:{background:"#FFEDD5",color:"#C2410C",border:"1px solid #FDBA74"}},RE(Check,{size:16}),appLanguage==="en"?"Log Entry":"ثبت ورود"));
+}
+function NmCustomJournalResultView({form,profileName,appLanguage,onChange,onSave}){
+ const set=(k,v)=>onChange(k,v);
+ return RE("div",{className:"nm-custom-journal-view rounded-2xl p-3 mb-2",style:{background:"var(--bg-card2)",border:"1px solid var(--border-2)"}},
+  RE("div",{className:"rounded-xl p-3 mb-3",style:{background:"color-mix(in srgb, var(--accent-gold) 8%, var(--bg-card))",border:"1px solid color-mix(in srgb, var(--accent-gold) 28%, var(--border-1))"}},RE("div",{className:"text-[12px] font-extrabold",style:{color:"var(--accent-gold)"}},"فرم سفارشی ثبت نتیجه معامله"),RE("div",{className:"text-[9px] leading-5 mt-1",style:{color:"var(--text-muted)"}},profileName?`فرم فعال: ${profileName}`:"فرم سفارشی فعال")),
+  RE(Field,{label:"قیمت خروج (اختیاری)"},RE("input",{type:"number",inputMode:"decimal",value:form.exit||"",onChange:e=>set("exit",e.target.value),className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}})),
+  RE(Field,{label:"سود/ضرر ($)"},RE("div",{className:"flex gap-2"},RE("button",{type:"button",onClick:()=>set("pnlSign","profit"),className:"px-3 rounded-lg text-sm",style:{background:form.pnlSign==="profit"?"#34D39922":"var(--bg-card)",color:form.pnlSign==="profit"?"#34D399":"var(--text-muted)",border:"1px solid var(--border-2)"}},"+ سود"),RE("button",{type:"button",onClick:()=>set("pnlSign","loss"),className:"px-3 rounded-lg text-sm",style:{background:form.pnlSign==="loss"?"#F8717122":"var(--bg-card)",color:form.pnlSign==="loss"?"#F87171":"var(--text-muted)",border:"1px solid var(--border-2)"}},"− ضرر"),RE("input",{type:"number",inputMode:"decimal",min:"0",value:form.pnl||"",onChange:e=>set("pnl",e.target.value),className:"flex-1 rounded-lg px-3 py-2 bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",border:"1px solid var(--border-2)",fontFamily:"JetBrains Mono, monospace"}}))),
+  RE("div",{className:"grid grid-cols-2 gap-2"},RE(Field,{label:"پیپ"},RE("input",{type:"number",inputMode:"decimal",value:form.pips||"",onChange:e=>set("pips",e.target.value),className:"w-full bg-transparent outline-none text-sm mono",style:{color:"var(--text-primary)",fontFamily:"JetBrains Mono, monospace"}})),RE(Field,{label:"نوع بستن"},RE(ChipGroup,{value:form.closeType||"دستی",options:["دستی","حد سود (TP)","حد ضرر (SL)"],onChange:v=>set("closeType",v),activeColor:"var(--accent-gold)"}))),
+  RE(NmCustomFieldsFormSection,{values:form.customFields||{},onChange:v=>set("customFields",v),kind:"result"}),RE(Field,{label:"یادداشت"},RE("textarea",{rows:3,value:form.note||"",onChange:e=>set("note",e.target.value),className:"w-full bg-transparent outline-none text-sm resize-none",style:{color:"var(--text-primary)"}})),
+  RE("button",{type:"button",onClick:onSave,className:"w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-2 nm-unified-export-btn",style:{background:"#FEF3C7",color:"#92400E",border:"1px solid #F59E0B"}},RE(Check,{size:16}),appLanguage==="en"?"Save Trade":"ثبت نهایی"));
+}
+
 function NmCustomFieldsChips({ trade }) {
     const defs = useCustomFieldDefs("all");
     const v = trade.customFields || {};
@@ -6422,11 +6473,11 @@ function nmTextNotifSaveSettings(next) {
 }
 function nmTextNotifEnabled(category) { return nmTextNotifLoadSettings()[category] !== false; }
 const NM_TEXT_NOTIF_ART = Object.freeze({
-    evaluation: "./notification-icons/01-evaluation.png",
-    psychology: "./notification-icons/02-psychology.png",
-    sessions: "./notification-icons/03-sessions-and-events.png",
-    news: "./notification-icons/04-news.png",
-    motivation: "./notification-icons/05-motivation.png"
+    evaluation: "./logos/01-evaluation.png",
+    psychology: "./logos/02-psychology.png",
+    sessions: "./logos/03-sessions-and-events.png",
+    news: "./logos/04-news.png",
+    motivation: "./logos/05-motivation.png"
 });
 function nmSendTextCategoryNotification(category, title, body, dedupeKey) {
     if (!nmTextNotifEnabled(category) || typeof Notification === "undefined" || Notification.permission !== "granted" || !("serviceWorker" in navigator)) return Promise.resolve(false);
@@ -6444,14 +6495,14 @@ function NmNotificationTextSettings() {
     const [settings, setSettings] = React.useState(() => nmTextNotifLoadSettings());
     const [expanded, setExpanded] = React.useState(false);
     const rows = [
-        ["sessions", "نشست‌ها و رویدادها", "شروع و پایان نشست‌ها، Kill Zone و Silver Bullet", "./notification-icons/03-sessions-and-events.png"],
-        ["news", "اخبار اقتصادی", "هشدار خبر ۳۰ ثانیه پیش از زمان رویداد", "./notification-icons/04-news.png"],
-        ["evaluation", "توصیه‌های ارزیابی پیشرفته", "اعلان توصیه‌های مبتنی بر داده‌های معاملاتی", "./notification-icons/01-evaluation.png"],
-        ["psychology", "توصیه‌های روانشناسی ترید", "اعلان نکته‌ها و اقدام‌های پیشنهادی رفتاری", "./notification-icons/02-psychology.png"],
-        ["motivation", "پیام‌های انگیزشی کتابخانه", "پیام‌های انگیزشی زمان‌بندی‌شده", "./notification-icons/05-motivation.png"]
+        ["sessions", "نشست‌ها و رویدادها", "شروع و پایان نشست‌ها، Kill Zone و Silver Bullet", "./logos/03-sessions-and-events.png"],
+        ["news", "اخبار اقتصادی", "هشدار خبر ۳۰ ثانیه پیش از زمان رویداد", "./logos/04-news.png"],
+        ["evaluation", "توصیه‌های ارزیابی پیشرفته", "اعلان توصیه‌های مبتنی بر داده‌های معاملاتی", "./logos/01-evaluation.png"],
+        ["psychology", "توصیه‌های روانشناسی ترید", "اعلان نکته‌ها و اقدام‌های پیشنهادی رفتاری", "./logos/02-psychology.png"],
+        ["motivation", "پیام‌های انگیزشی کتابخانه", "پیام‌های انگیزشی زمان‌بندی‌شده", "./logos/05-motivation.png"]
     ];
     const toggle = key => setSettings(prev => { const next = nmTextNotifSaveSettings({ ...prev, [key]: !(prev[key] !== false) }); return next; });
-    return RE("section", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+    return RE("section", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
         RE("button", { type: "button", onClick: () => setExpanded(v => !v), className: "w-full flex items-center justify-between", "aria-expanded": expanded },
             RE("span", { className: "flex items-center gap-2 text-[13px] font-bold", style: { color: "var(--text-primary)" } }, "🔔", "نوتیفیکیشن‌های متنی"),
             RE("span", { className: "text-[10px]", style: { color: "var(--accent-gold)" } }, expanded ? "بستن ▲" : "تنظیم دسته‌ها ▼")),
@@ -8192,6 +8243,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  const [showAdvanced,setShowAdvanced]=React.useState(false);
  const [showPsychology,setShowPsychology]=React.useState(false);
  const [showComprehensive,setShowComprehensive]=React.useState(false);
+ const [showDashboardAI,setShowDashboardAI]=React.useState(false);
  const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");return Array.isArray(x)&&x.length?x:NM_DASH_DEFAULT_LAYOUT}catch(e){return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);const [replay,setReplay]=React.useState(null);const [coach,setCoach]=React.useState(false);
  const persistFilters=x=>{setFilters(x);try{localStorage.setItem(NM_DASH_FILTER_KEY,JSON.stringify(x))}catch(e){}};const saveLayout=a=>{setLayout(a);try{localStorage.setItem(NM_DASH_LAYOUT_KEY,JSON.stringify(a))}catch(e){}};const reorder=(from,to)=>{if(!from||from===to)return;const a=[...layout],i=a.indexOf(from),j=a.indexOf(to);if(i<0||j<0)return;a.splice(i,1);a.splice(j,0,from);saveLayout(a);};const moveWidget=(id,dir)=>{const a=[...layout],i=a.indexOf(id),j=i+dir;if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];saveLayout(a);};
  const analysisPlans=React.useMemo(()=>[...(plans||[]),...(chartPlans||[]),...(dayPlans||[])],[plans,chartPlans,dayPlans]);
@@ -8282,9 +8334,15 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
              React.createElement("button",{onClick:onExportAdvancedExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#8B5CF6",color:"#fff"}},"Excel ارزیابی پیشرفته"),
              React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته")))))
        ),
-       RE(NmDashboardAIArm,{mode:"advanced",trades:filtered,recommendations:advancedRecommendations}),
        React.createElement(PsychologyLayer,{journalTrades:closed,statementTrades:statementTrades,source:psychologyDataSource,setSource:setPsychologyDataSource,psychOptions:psychOptions,activeAccount:activeAccount,statementImporting:statementImporting,statementImportError:statementImportError,onImportDashboardStatementFiles:onImportDashboardStatementFiles,onClearDashboardStatement:onClearDashboardStatement,dashboardStatementTrades:dashboardStatementTrades,baseAccounts:baseAccounts,selectedBaseAccounts:selectedBaseAccounts,onToggleBaseAccount:onToggleBaseAccount,onSelectBaseType:onSelectBaseType,onToggleAllBaseAccounts:onToggleAllBaseAccounts,accountTypeOf:accountTypeOf}),
        RE(NmPortfolioView,{accounts:selectedBaseAccounts,accountTypes,activeAccount,accountTradesMap}),
+       React.createElement("section",{className:"rounded-2xl mt-3 mb-3",style:nmDashBoxStyle("#A78BFA")},
+         React.createElement("button",{type:"button",onClick:()=>setShowDashboardAI(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:nmDashHeadStyle("#A78BFA",showDashboardAI),"aria-expanded":showDashboardAI},
+           React.createElement("div",{className:"flex items-center gap-2 min-w-0"},nmDashChip("#A78BFA","✨"),React.createElement("div",null,React.createElement("div",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"تحلیل هوش مصنوعی"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"برآیند تحلیل کل مجموعه داشبورد؛ تنها محل نمایش تحلیل هوش مصنوعی")),RE(NmHeaderDots,{title:"تحلیل هوش مصنوعی"})),
+           React.createElement("span",{className:"nm-settings-chevron nm-collapse-chevron shrink-0","aria-hidden":true},showDashboardAI?React.createElement(ChevronUp,{size:14,color:"var(--accent-gold)"}):React.createElement(ChevronDown,{size:14,color:"var(--accent-gold)"}))),
+         showDashboardAI&&React.createElement("div",{className:"p-3"},
+           React.createElement("div",{className:"text-[10px] leading-5 mb-3 px-1",style:{color:"var(--text-muted)"}},"این بخش برآیند تحلیل آماری، ارزیابی پیشرفته، روانشناسی ترید و نمای پرتفوی/چندحسابی را یکجا جمع می‌کند. توصیه‌های جزئی فقط در بخش توصیه خودشان باقی می‌مانند."),
+           RE(NmDashboardAIArm,{mode:"all",trades:filtered,recommendations:advancedRecommendations}))),
 React.createElement("section",{className:"rounded-2xl mt-3 mb-3",style:nmDashBoxStyle(NM_DASH_ACCENT.exp)},
          React.createElement("button",{type:"button",onClick:()=>setShowComprehensive(v=>!v),className:"w-full flex items-center justify-between rounded-t-2xl px-4 py-3",style:nmDashHeadStyle(NM_DASH_ACCENT.exp, showComprehensive),"aria-expanded":showComprehensive},
            React.createElement("div",{className:"flex items-center gap-2 min-w-0"},nmDashChip(NM_DASH_ACCENT.exp,"📤"),React.createElement("div",null,React.createElement("div",{className:"text-[15px] font-extrabold",style:{color:"var(--text-primary)"}},"خروجی جامع داشبورد"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"Excel و PDF جامع داشبورد"))),
@@ -8755,7 +8813,9 @@ function App() {
     const [closingTrade, setClosingTrade] = useState(null);
     const [editingTrade, setEditingTrade] = useState(null);
     const [editForm, setEditForm] = useState(null);
-    const [closeForm, setCloseForm] = useState({ exit: "", pnl: "", pnlSign: "profit", pips: "", note: "", disciplineMistakes: [], closeType: "دستی", manualExitReason: "", tradeManagement: [], planAnswers: {} });
+    const [closeForm, setCloseForm] = useState({ exit: "", pnl: "", pnlSign: "profit", pips: "", note: "", disciplineMistakes: [], closeType: "دستی", manualExitReason: "", tradeManagement: [], planAnswers: {}, customFields: {} });
+    const entryJournalForm = useJournalFormMode("entry");
+    const resultJournalForm = useJournalFormMode("result");
     const [mt5BridgeSettings, setMt5BridgeSettings] = useState(DEFAULT_MT5_BRIDGE_SETTINGS);
     const [mt5BridgeStatus, setMt5BridgeStatus] = useState({ state: "idle", text: "غیرفعال", synced: 0 });
     const [tradePlans, setTradePlans] = useState([NM_DEFAULT_TRADE_PLAN]);
@@ -10755,7 +10815,7 @@ function App() {
     }
     function openCloseForm(trade) {
         setClosingTrade(trade);
-        setCloseForm({ exit: "", pnl: "", pnlSign: "profit", pips: "", note: "", disciplineMistakes: [], closeType: "دستی", manualExitReason: "", tradeManagement: [], planAnswers: {}, chartImageAfter: "", voiceNoteAfter: "" });
+        setCloseForm({ exit: "", pnl: "", pnlSign: "profit", pips: "", note: "", disciplineMistakes: [], closeType: "دستی", manualExitReason: "", tradeManagement: [], planAnswers: {}, customFields: {}, chartImageAfter: "", voiceNoteAfter: "" });
     }
     function openEditCloseForm(trade) {
         setClosingTrade(trade);
@@ -10771,7 +10831,7 @@ function App() {
             manualExitReason: trade.manualExitReason || "",
             tradeManagement: trade.tradeManagement || [],
             planAnswers: trade.review?.planAnswers?.answers || {},
-            chartImageAfter: trade.chartImageAfter || "", voiceNoteAfter: trade.voiceNoteAfter || "",
+            chartImageAfter: trade.chartImageAfter || "", voiceNoteAfter: trade.voiceNoteAfter || "", customFields: trade.customFields || {},
         });
     }
     function onCloseFieldChange(field, val) {
@@ -10812,6 +10872,7 @@ function App() {
             closeType: closeForm.closeType,
             manualExitReason: closeForm.manualExitReason,
             tradeManagement: closeForm.tradeManagement || [],
+            customFields: { ...(t.customFields || {}), ...(closeForm.customFields || {}) },
             chartImageAfter: closeForm.chartImageAfter || "", voiceNoteAfter: closeForm.voiceNoteAfter || "",
             closedDate, closedTime, durationMinutes,
         } : t);
@@ -11945,7 +12006,6 @@ function App() {
             React.createElement("div", { className: "flex items-center gap-2 min-w-0" },nmDashChip(NM_DASH_ACCENT.stats, "📈"),React.createElement("span", { className: "text-[15px] font-extrabold", style: { color: "var(--text-primary)" } }, "تحلیل آماری"),RE(NmHeaderDots,{title:"تحلیل آماری"})),
             React.createElement("span", { className: "nm-settings-chevron nm-collapse-chevron shrink-0", "aria-hidden": true }, showStatisticalAnalysis ? React.createElement(ChevronUp, { size: 14, color: "var(--accent-gold)" }) : React.createElement(ChevronDown, { size: 14, color: "var(--accent-gold)" }))),
         showStatisticalAnalysis && React.createElement("div", { className: "px-4 mt-2" },
-            RE(NmDashboardAIArm,{mode:"stats",trades:dashboardStatisticalSelectedTrades}),
             React.createElement("div", { className: "rounded-xl p-2.5 mb-3", style: { background: "color-mix(in srgb, #F59E0B 7%, var(--bg-card2))", border: "1px solid color-mix(in srgb, #F59E0B 25%, var(--border-2))" } },
                 React.createElement("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "منبع ارزیابی تحلیل آماری"),
                 React.createElement("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "منبع این بخش مستقل از ارزیابی پیشرفته است. انتخاب ژورنال یا استیتمنت فقط نمودارها، پارامترها و خروجی‌های همین تحلیل آماری را تغییر می‌دهد."),
@@ -13373,11 +13433,12 @@ function App() {
                     React.createElement("button", { onClick: () => doExport(r), className: "px-3 py-2 rounded-lg text-[11px] nm-unified-export-btn", style: { background: "var(--bg-card2)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } }, "Excel"),
                     React.createElement("button", { onClick: () => doExportPdf(r), className: "px-3 py-2 rounded-lg text-[11px] nm-unified-export-btn", style: { background: "var(--bg-card2)", color: "var(--accent-gold)", border: "1px solid var(--border-2)" } }, "PDF")))))))),
         showOpenForm && openForm && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setShowOpenForm(false) },
-            React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
+            React.createElement("div", { className: `w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto ${entryJournalForm.mode === "custom" ? "nm-journal-custom-mode" : ""}`, style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } }, appLanguage === "en" ? "Log Trade Entry" : "\u062B\u0628\u062A \u0648\u0631\u0648\u062F \u0645\u0639\u0627\u0645\u0644\u0647"),
                     React.createElement("button", { onClick: () => setShowOpenForm(false) },
                         React.createElement(X, { size: 18, color: "var(--text-muted)" }))),
+                entryJournalForm.mode === "custom" && RE(NmCustomJournalEntryView, { form: openForm, setForm: setOpenForm, pairs, appLanguage, profileName: entryJournalForm.profileName, onSave: saveOpenTrade }),
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                     React.createElement(Field, { label: numLabel(1, hlLabel(appLanguage === "en" ? "Date (Gregorian)" : "تاریخ (میلادی)")) },
                         React.createElement("input", { type: "date", value: openForm.date, onChange: e => setOpenForm({ ...openForm, date: e.target.value }), className: "w-full bg-transparent outline-none text-sm", style: { color: "var(--text-primary)" } })),
@@ -13756,13 +13817,14 @@ function App() {
                     React.createElement(Check, { size: 16 }),
                     " ", appLanguage === "en" ? "Log Entry" : "\u062B\u0628\u062A \u0648\u0631\u0648\u062F")))),
         closingTrade && (React.createElement("div", { className: "fixed inset-0 z-50 flex items-end", style: { background: "#000000AA" }, onClick: () => setClosingTrade(null) },
-            React.createElement("div", { className: "w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto", style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
+            React.createElement("div", { className: `w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto ${resultJournalForm.mode === "custom" ? "nm-journal-custom-mode" : ""}`, style: { background: "var(--bg-card)" }, onClick: e => e.stopPropagation() },
                 React.createElement("div", { className: "flex items-center justify-between mb-4" },
                     React.createElement("h3", { className: "text-sm font-semibold", style: { color: "var(--text-primary)" } },
                         (appLanguage === "en" ? "Log Result — " : "\u062B\u0628\u062A \u0646\u062A\u06CC\u062C\u0647 \u2014 "),
                         closingTrade.pair),
                     React.createElement("button", { onClick: () => setClosingTrade(null) },
                         React.createElement(X, { size: 18, color: "var(--text-muted)" }))),
+                resultJournalForm.mode === "custom" && RE(NmCustomJournalResultView, { form: closeForm, profileName: resultJournalForm.profileName, appLanguage, onChange: onCloseFieldChange, onSave: finalizeClose }),
                 React.createElement(Field, { label: numLabel(1, hlLabel(appLanguage === "en" ? "Exit Price (optional)" : "قیمت خروج (اختیاری)")) },
                     React.createElement("input", { type: "number", inputMode: "decimal", value: closeForm.exit, onChange: e => onCloseFieldChange("exit", e.target.value), className: "w-full bg-transparent outline-none text-sm mono", style: { color: "var(--text-primary)", fontFamily: "JetBrains Mono, monospace" } })),
                 React.createElement("div", { className: "mb-2" },
