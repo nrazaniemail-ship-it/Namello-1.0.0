@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Namello 1.0.1</title>
+<title>Namello 1.0.2</title>
 <meta name="theme-color" content="#0B0E11" id="themeColorMeta" />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icon-192.png" />
@@ -146,7 +146,7 @@
 </style>
 </head>
 <body>
-<div id="boot-status">Loading Namello 1.0.1…</div>
+<div id="boot-status">Loading Namello 1.0.2…</div>
 <div id="boot-error"></div>
 <div id="root"></div>
 <div id="runtime-error-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; background:#1A0B0B; color:#F87171; padding:10px 14px; font-family:monospace; font-size:11px; direction:ltr; text-align:left; border-top:1px solid #F8717155;"></div>
@@ -387,14 +387,14 @@
      اعلان‌ها، آلارم پس‌زمینه، «باز کردن با…» و رنگ نوار سیستم را به‌جای WebView تأمین می‌کند. -->
 <script src="./native-bridge.js"></script>
 <script>
-  // بدون این بلوک، فایل sw.js هیچ‌وقت واقعاً فعال نمی‌شد و برنامه‌ی نصب‌شده هیچ‌چیزی
-  // رو کش نمی‌کرد — همین، دلیل اصلی اجرا نشدنش بدون اینترنت بود.
+  // ثبت Service Worker با مسیر و scope صریح، متناسب با نصب در زیرمسیرهایی مانند GitHub Pages.
+  // از getRegistration().update() استفاده نمی‌کنیم؛ رجیستری قدیمی با script ناموجود می‌تواند
+  // Promise ردشده و خطای Unhandled promise rejection ایجاد کند. register() رجیستری را همگام می‌کند.
   if ('serviceWorker' in navigator) {
-    window.addEventListener('pageshow', function () { try { navigator.serviceWorker.getRegistration().then(function(r){ if(r) r.update(); }); } catch(e){} });
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js').then(function (reg) {
-        try { reg.update(); } catch (e) {}
-      }).catch(function (err) {
+      var swUrl = new URL('./sw.js', window.location.href);
+      var swScope = new URL('./', window.location.href).pathname;
+      navigator.serviceWorker.register(swUrl.href, { scope: swScope }).catch(function (err) {
         console.warn('Namello: service worker registration failed', err);
       });
     });
@@ -3449,12 +3449,13 @@ const JournalEditToggle = ({ editMode, onToggle }) => RE("button", { type: "butt
    Version Code = عدد صحیحِ افزایشی؛ با «هر» آپدیت یکی زیاد می‌شود (حتی PATCH).
    هنگام انتشار نسخه‌ی جدید فقط همین سه ثابت + فایل version.json را به‌روز کن. */
 const NM_APP_NAME = "Namello";
-const NM_VERSION_NAME = "1.0.1";
-const NM_VERSION_CODE = 68;
+const NM_VERSION_NAME = "1.0.2";
+const NM_VERSION_CODE = 69;
 const NM_VERSION_LABEL = NM_APP_NAME + " " + NM_VERSION_NAME;
 const NM_VERSION_029_NOTE = "نسخه 1.0.29: یکدست‌سازی شماره نسخه، کد نسخه و کش آفلاین در بسته PWA؛ قابلیت‌های هوش مصنوعی نسخه قبل حفظ شده‌اند.";
 const NM_VERSION_DATE = "انتشار یکپارچه 1.0.0؛ شامل آخرین اصلاحات ژورنال، پشتیبان‌گیری و بازگشت اندروید";
 const NM_CHANGELOG = [
+    "نسخه 1.0.2: ثبت Service Worker با مسیر و scope صریح انجام می‌شود؛ فراخوانی دستی update روی رجیستری قدیمی حذف شد تا خطای Unhandled promise rejection رخ ندهد.",
     "نسخه 1.0.1: نسخه‌بندی برنامه همگام‌سازی شد؛ اصلاحات موجود مربوط به پشتیبان اندروید، دکمه بازگشت، پروفایل‌های فیلد سفارشی، اعلان‌ها و آیکون‌های هفتگی حفظ شدند. آزمون‌های خودکار و typecheck اجرا شدند؛ آزمایش APK روی دستگاه واقعی جداگانه لازم است.",
     "نسخه 1.0.0: بسته‌ی یکپارچه با آخرین تغییرات موجود در شاخه‌ی توسعه؛ Version Code اندروید برای جلوگیری از downgrade روی 67 نگه داشته شده است.",
     "نسخه 1.0.67: اگر دکمه بازگشت هنگام بازبودن پنجره یا زیرصفحه مصرف شود، شمارنده خروج با دو بار فشردن در صفحه اصلی صفر می‌شود؛ این کار مانع خروج ناخواسته پس از یک مکث کوتاه می‌شود.",
@@ -4296,7 +4297,7 @@ function NmStorageCard({ showToast }) {
                         RE("div", { className: "text-[12px] font-semibold", style: { color: "var(--text-primary)" } }, "محافظت از داده‌ها در برابر پاک‌سازی خودکار"),
                         RE("div", { className: "text-[10px] leading-5 mt-0.5", style: { color: "var(--text-muted)" } }, persisted === true ? "وضعیت: فعال. مرورگر معمولاً داده‌های Namello را هنگام کمبود فضا خودکار حذف نمی‌کند؛ این گزینه جایگزین فایل پشتیبان نیست." : persisted === false ? "وضعیت: هنوز فعال نشده یا درخواست پذیرفته نشده است. این گزینه فقط از حذف خودکار توسط مرورگر می‌کاهد و مانع پاک‌کردن دستی داده‌ها، حذف برنامه یا خرابی دستگاه نمی‌شود." : "وضعیت این قابلیت توسط مرورگر گزارش نشده است. برای ایمنی، پشتیبان‌گیری منظم را فعال نگه دارید.")),
                     persisted !== true && RE("button", { type: "button", onClick: requestPersist, className: "shrink-0 px-3 py-2 rounded-xl text-[12px] font-medium", style: { background: nmTint(15), color: "var(--accent-gold)" } }, "درخواست فعال‌سازی")),
-                RE("div", { className: "text-[10px] leading-5 mt-2 px-1", style: { color: "var(--text-muted)" } }, "این دکمه کلید روشن/خاموش معمولی نیست؛ از مرورگر درخواست می‌کند داده‌های محلی برنامه (مانند ژورنال و تنظیمات) را در برابر پاک‌سازی خودکار محافظت کند. تصمیم نهایی با مرورگر است و ممکن است درخواست رد شود. خاموش‌کردن این قابلیت از داخل برنامه معمولاً امکان‌پذیر نیست. فایل پشتیبان جداگانه تهیه کنید."))));
+                RE("div", { className: "text-[10px] leading-5 mt-2 px-1", style: { color: "var(--text-muted)" } }, "این دکمه کلید روشن/خاموش معمولی نیست؛ از مرورگر درخواست می‌کند داده‌های محلی برنامه (مانند ژورنال و تنظیمات) را در برابر پاک‌سازی خودکار محافظت کند. تصمیم نهایی با مرورگر است و ممکن است درخواست رد شود. خاموش‌کردن این قابلیت از داخل برنامه معمولاً امکان‌پذیر نیست. فایل پشتیبان جداگانه تهیه کنید.")));
 }
 
 function NmUpdateCard() {
