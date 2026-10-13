@@ -1,4 +1,4 @@
-# Namello 1.0.3
+# Namello 1.0.4
 
 PWA trading journal with broker CSV templates/import guide, virtualized statement lists, psychology metrics, multi-account portfolio view, Prop Firm rules, MT5/TradingView OHLC replay, stronger Sync conflict resolution, and a gradual TypeScript/Vite migration scaffold.
 
