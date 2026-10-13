@@ -1297,7 +1297,7 @@ function SessionClock({ minutesOfDay, seconds = 0, sessions, killzones, silverbu
     const hourTicks = Array.from({ length: 24 }, (_, i) => i);
     const minuteTicks = Array.from({ length: 60 }, (_, i) => i);
     const sessR = 133, sessW = 28;
-    return (React.createElement("svg", { viewBox: `0 0 ${size} ${size}`, className: "w-full max-w-[380px] mx-auto select-none", style: { aspectRatio: "1 / 1" }, preserveAspectRatio: "xMidYMid meet" },
+    return (React.createElement("svg", { viewBox: `-24 -24 ${size + 48} ${size + 48}`, className: "w-full max-w-[380px] mx-auto select-none", style: { aspectRatio: "1 / 1" }, preserveAspectRatio: "xMidYMid meet" },
         React.createElement("defs", null,
             React.createElement("radialGradient", { id: "namelloClockFace", cx: "50%", cy: "50%", r: "65%" },
                 React.createElement("stop", { offset: "0%", stopColor: "#141922" }),
@@ -1309,10 +1309,10 @@ function SessionClock({ minutesOfDay, seconds = 0, sessions, killzones, silverbu
         hourTicks.map(h => {
             const a = (h / 24) * 360;
             const major = h % 3 === 0;
-            const p1 = polar(cx, cy, major ? 170 : 172, a), p2 = polar(cx, cy, 179, a), lp = polar(cx, cy, 103, a);
+            const p1 = polar(cx, cy, major ? 170 : 172, a), p2 = polar(cx, cy, 179, a), lp = polar(cx, cy, 201, a);
             return (React.createElement("g", { key: h },
                 React.createElement("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, stroke: major ? "#4A5260" : "#333A44", strokeWidth: major ? 1.5 : 1 }),
-                React.createElement("text", { x: lp.x, y: lp.y, fill: major ? "#9CA3AF" : "var(--text-muted)", fontSize: major ? 16 : 14, fontWeight: "700", fontFamily: "JetBrains Mono, monospace", textAnchor: "middle", dominantBaseline: "middle" }, pad2(h))));
+                React.createElement("text", { x: lp.x, y: lp.y, fill: "#86EFAC", fontSize: major ? 28 : 24, fontWeight: "800", fontFamily: "JetBrains Mono, monospace", textAnchor: "middle", dominantBaseline: "middle" }, pad2(h))));
         }),
         minuteTicks.map(m => {
             const a = (m / 60) * 360;
@@ -2972,7 +2972,7 @@ function NmPsychologyMetricsCard({trades}){
  );
 }
 
-function NmDashboardAIArm({ mode, trades }) {
+function NmDashboardAIArm({ mode, trades, recommendations = [] }) {
     const [expanded, setExpanded] = React.useState(false);
     const [refresh, setRefresh] = React.useState(0);
     const closed = (trades || []).filter(t => t && t.status === "closed");
@@ -3010,10 +3010,10 @@ function NmDashboardAIArm({ mode, trades }) {
     React.useEffect(() => {
         if ((mode !== "advanced" && mode !== "psych") || !nums.length || !actions.length) return;
         const category = mode === "advanced" ? "evaluation" : "psychology";
-        const recommendation = actions[0];
+        const recommendation = recommendations?.[0] || actions[0];
         const dedupe = `${mode}|${nums.length}|${Math.round(total * 100) / 100}|${recommendation}`;
         nmSendTextCategoryNotification(category, mode === "advanced" ? "توصیه ارزیابی پیشرفته Namello" : "توصیه روانشناسی ترید Namello", recommendation, dedupe);
-    }, [mode, nums.length, Math.round(total * 100) / 100, actions.join("|")]);
+    }, [mode, nums.length, Math.round(total * 100) / 100, actions.join("|"), recommendations?.join("|")]);
     return React.createElement("section", { className:"rounded-2xl p-3 mb-3", style:{background:"color-mix(in srgb, #A78BFA 7%, var(--bg-card))",border:"1px solid color-mix(in srgb, #A78BFA 35%, var(--border-2))"} },
       React.createElement("button", {type:"button", onClick:()=>setExpanded(v=>!v), className:"w-full flex items-center justify-between", "aria-expanded":expanded},
         React.createElement("span", {className:"flex items-center gap-2 text-[12px] font-extrabold",style:{color:"var(--text-primary)"}}, "✨", "هوش مصنوعی", React.createElement("span",{className:"text-[9px] font-medium px-2 py-0.5 rounded-full",style:{background:"#A78BFA22",color:"#A78BFA"}}, mode === "stats" ? "تحلیل آماری" : mode === "advanced" ? "توصیه اجرایی" : "بینش رفتاری")),
@@ -3029,11 +3029,58 @@ function NmDashboardAIArm({ mode, trades }) {
     );
 }
 
+function nmAdvancedRecommendations(trades) {
+    const closed = (trades || []).filter(t => t.status === "closed" && Number.isFinite(Number(t.pnl)));
+    if (closed.length < 5) return [];
+    const m = nmDashMetrics(closed, 0);
+    const rec = [];
+    const recent = closed.slice().sort((a,b)=>`${a.date||""}T${a.time||""}`.localeCompare(`${b.date||""}T${b.time||""}`)).slice(-10);
+    const recentWinRate = recent.length ? recent.filter(t => Number(t.pnl) > 0).length / recent.length * 100 : null;
+    if (m.winRate < 45) rec.push("نرخ برد پایین است؛ قبل از افزایش ریسک، کیفیت ستاپ‌های کم‌عملکرد را بازبینی کن.");
+    else if (m.winRate >= 60) rec.push("نرخ برد مناسب است؛ ریسک هر معامله را فقط در صورت ثبات سایر شاخص‌ها افزایش بده.");
+    if (m.expectancy !== null && m.expectancy < 0) rec.push("Expectancy منفی است؛ فعلاً اولویت با حذف الگوهای زیان‌ده و کاهش معاملات ضعیف باشد.");
+    else if (m.expectancy !== null && m.expectancy > 0) rec.push("Expectancy مثبت است؛ مزیت فعلی را با حفظ همان قواعد ورود و ریسک دنبال کن.");
+    if (m.pf > 0 && m.pf < 1) rec.push("Profit Factor زیر ۱ است؛ حجم معامله را افزایش نده و علت زیان تجمعی را بررسی کن.");
+    if (m.maxDD > 0 && Number(m.pnl) > 0 && m.maxDD > Math.abs(Number(m.pnl)) * 0.75) rec.push("افت سرمایه نسبتاً سنگین است؛ سقف ریسک و توالی ضررها را بازتنظیم کن.");
+    if (recentWinRate !== null && recent.length >= 6 && recentWinRate < 40) rec.push("عملکرد اخیر ضعیف شده؛ پیش از معامله بعدی یک بازبینی کوتاه از ستاپ و شرایط بازار انجام بده.");
+    if (recentWinRate !== null && recent.length >= 6 && recentWinRate >= 70) rec.push("عملکرد اخیر قوی است؛ از افزایش هیجانی حجم پس از چند برد پیاپی خودداری کن.");
+    const bySession = groupProfitability(closed, nmDashSession).filter(x=>x.name && x.name !== "-");
+    const bestSession = bySession.length ? bySession.slice().sort((a,b)=>b.value-a.value)[0] : null;
+    const worstSession = bySession.length ? bySession.slice().sort((a,b)=>a.value-b.value)[0] : null;
+    if (bestSession && bestSession.value > 0) rec.push(`نشست «${bestSession.name}» عملکرد بهتری دارد؛ تمرکز انتخابی روی همین بازه را بررسی کن.`);
+    if (worstSession && worstSession.value < 0 && (!bestSession || worstSession.name !== bestSession.name)) rec.push(`نشست «${worstSession.name}» زیان‌ده است؛ معاملات این بازه را جداگانه بازبینی و فیلتر کن.`);
+    const mistakes = {};
+    closed.forEach(t => (t.disciplineMistakes || t.review?.mistakes || []).forEach(k => mistakes[k] = (mistakes[k] || 0) + 1));
+    const topMistake = Object.entries(mistakes).sort((a,b)=>b[1]-a[1])[0];
+    if (topMistake) rec.push(`خطای «${topMistake[0]}» پرتکرارترین مورد ثبت‌شده است؛ برای آن یک قانون اجرایی مشخص تعریف کن.`);
+    return [...new Set(rec)].slice(0, 6);
+}
+function NmDashboardRecommendations({ title, recommendations, accent }) {
+    const items = Array.isArray(recommendations) ? recommendations.filter(Boolean).slice(0, 6) : [];
+    return React.createElement("section", { className: "rounded-xl p-3 mb-3", style: { background: `color-mix(in srgb, ${accent} 7%, var(--bg-card))`, border: `1px solid color-mix(in srgb, ${accent} 30%, var(--border-1))` } },
+        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("span", { className: "text-[12px]" }, "💡"),
+            React.createElement("span", { className: "text-[12px] font-extrabold", style: { color: accent } }, title)),
+        items.length ? items.map((x, i) => React.createElement("div", { key: i, className: "rounded-lg px-2.5 py-2 mb-1.5 last:mb-0 text-[10px] leading-5", style: { background: "var(--bg-card2)", color: "var(--text-secondary)" } }, "• ", x))
+        : React.createElement("div", { className: "text-[10px] leading-5", style: { color: "var(--text-muted)" } }, "با داده فعلی هنوز توصیه مشخصی تولید نشده است."));
+}
+function nmPsychologyRecommendations(insights) {
+    if (!insights || insights.insufficient) return [];
+    const rec = [];
+    if (insights.weaknesses?.length) rec.push("مهم‌ترین الگوی ضعف را انتخاب کن و برای معاملات بعدی یک قانون رفتاری ساده و قابل‌سنجش تعریف کن.");
+    if (insights.threats?.length) rec.push("پیش از معامله بعدی تهدیدهای شناسایی‌شده را مرور کن و در صورت تکرار، حجم یا تعداد معاملات را محدود کن.");
+    if (insights.strengths?.length) rec.push("رفتارهای مثبت شناسایی‌شده را به چک‌لیست قبل و حین معامله منتقل کن تا تکرارپذیر شوند.");
+    if (insights.opportunities?.length) rec.push("فرصت شناسایی‌شده را در نمونه‌های بیشتری آزمایش کن و فقط پس از تأیید آماری آن را تقویت کن.");
+    if (insights.weaknesses?.[0]) rec.push("در چند معامله آینده فقط همین ضعف اصلی را پایش کن و نتیجه را ثبت کن.");
+    return [...new Set(rec)].slice(0, 5);
+}
+
 function PsychologyLayer({ journalTrades, statementTrades, source, setSource, psychOptions, activeAccount, statementImporting, statementImportError, onImportDashboardStatementFiles, onClearDashboardStatement, dashboardStatementTrades, baseAccounts, selectedBaseAccounts, onToggleBaseAccount, onSelectBaseType, onToggleAllBaseAccounts, accountTypeOf }) {
     const [showPsychology, setShowPsychology] = React.useState(false);
     const [showPsychBasePicker, setShowPsychBasePicker] = React.useState(false);
     const trades = source === "statement" ? statementTrades : journalTrades;
     const insights = useMemo(() => computePsychologyInsights(trades, psychOptions), [trades, psychOptions]);
+    const recommendations = useMemo(() => nmPsychologyRecommendations(insights), [insights]);
     const quads = [
         { key: "strengths", title: "نقاط قوت", color: "#34D399", items: insights.strengths },
         { key: "weaknesses", title: "نقاط ضعف", color: "#F87171", items: insights.weaknesses },
@@ -3087,7 +3134,8 @@ function PsychologyLayer({ journalTrades, statementTrades, source, setSource, ps
             React.createElement("div", { className: "text-[9px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "منبع داده‌ای روانشناسی: ", source === "statement" ? "ارزیابی استیتمنت" : "معاملات ژورنال"),
             sourcePanel,
             results,
-            RE(NmDashboardAIArm, { mode:"psych", trades })
+            RE(NmDashboardRecommendations, { title:"توصیه", recommendations, accent:"#14B8A6" }),
+            RE(NmDashboardAIArm, { mode:"psych", trades, recommendations })
         )
     );
 }
@@ -5498,25 +5546,33 @@ function NmCustomFieldsManager() {
     const remove = (id) => { nmCfSave(defs.filter(d => d.id !== id)); if (editId === id) { setEditId(null); setForm({ label: "", type: "text", optionsText: "" }); } };
     const saveProfile = async () => { const n = profileName.trim(); if (!n) { nmToast("نام پیکربندی را وارد کنید."); return; } await nmCfSaveProfile(n); setProfiles(await nmCfGetValue(NM_CF_PROFILES_KEY, {})); nmToast("پیکربندی «" + n + "» ذخیره شد."); };
     const applyMode = async (kind, mode, chosenName) => { const selected = mode === "custom" ? (chosenName || profileName.trim() || Object.keys(profiles)[0] || "") : ""; const ok = await nmCfApplyMode(kind, mode, selected); if (!ok && mode === "custom") { nmToast("ابتدا یک پیکربندی سفارشی ذخیره کنید."); return; } if (kind === "entry") setEntryMode(mode); else setResultMode(mode); };
-    const modePanel = RE("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3" },
-        [["entry", "ثبت ورود", entryMode], ["result", "ثبت نتیجه معامله", resultMode]].map(([kind, label, mode]) => {
-            const buttons = [["namello", "Namello"], ["raw", "خام"], ["custom", "سفارشی"]].map(([m, title]) =>
-                RE("button", { key: m, type: "button", onClick: () => applyMode(kind, m), className: "flex-1 py-1.5 rounded-md text-[10px]", style: { background: mode === m ? nmTint(15) : "var(--bg-card)", color: mode === m ? "var(--accent-gold)" : "var(--text-secondary)", border: "1px solid " + (mode === m ? nmTint(40) : "var(--border-2)") } }, title));
-            return RE("div", { key: kind, className: "rounded-lg p-2", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
-                RE("div", { className: "text-[11px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, label),
-                RE("div", { className: "flex gap-1" }, buttons));
-        }));
+    const applyJournalForm = async (mode, profileName) => {
+        const chosen = mode === "custom" ? (profileName || "") : "";
+        if (mode === "custom" && !chosen) { nmToast("ابتدا یک پیکربندی سفارشی ذخیره کنید."); return; }
+        const a = await nmCfApplyMode("entry", mode, chosen);
+        const b = await nmCfApplyMode("result", mode, chosen);
+        if (!a || !b) { nmToast("انتخاب فرم انجام نشد."); return; }
+        setEntryMode(mode); setResultMode(mode); setProfileName(chosen);
+        nmToast(mode === "custom" ? `فرم «${chosen}» برای ثبت ورود و نتیجه فعال شد.` : "فرم Namello برای ثبت ورود و نتیجه فعال شد.");
+    };
+    const modePanel = RE("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
+        RE("div", { className: "text-[11px] font-semibold mb-1.5", style: { color: "var(--text-primary)" } }, "فرم فعال ژورنال"),
+        RE("div", { className: "text-[9px] leading-5 mb-2", style: { color: "var(--text-muted)" } }, "با انتخاب یک فرم، بخش «ثبت ورود» و «ثبت نتیجه معامله» هر دو مطابق همان فرم نمایش داده می‌شوند."),
+        RE("div", { className: "flex flex-wrap gap-1.5" },
+            RE("button", { type:"button", onClick:()=>applyJournalForm("namello"), className:"px-3 py-2 rounded-lg text-[10px] font-semibold", style:{background:entryMode==="namello"&&resultMode==="namello"?"var(--accent-gold)":"var(--bg-card)",color:entryMode==="namello"&&resultMode==="namello"?"var(--bg-page)":"var(--text-secondary)",border:"1px solid "+(entryMode==="namello"&&resultMode==="namello"?"var(--accent-gold)":"var(--border-2)")} }, "Namello"),
+            Object.keys(profiles).map(name => RE("button", { key:name, type:"button", onClick:()=>applyJournalForm("custom",name), className:"px-3 py-2 rounded-lg text-[10px] font-semibold", style:{background:entryMode==="custom"&&resultMode==="custom"&&profileName===name?"var(--accent-gold)":"var(--bg-card)",color:entryMode==="custom"&&resultMode==="custom"&&profileName===name?"var(--bg-page)":"var(--text-secondary)",border:"1px solid "+(entryMode==="custom"&&resultMode==="custom"&&profileName===name?"var(--accent-gold)":"var(--border-2)")} }, name))
+        )
+    );
     const profilePanel = RE("div", { className: "rounded-lg p-2 mb-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
         RE("div", { className: "text-[11px] font-semibold mb-2", style: { color: "var(--text-primary)" } }, "ذخیره پیکربندی سفارشی"),
         RE("div", { className: "flex gap-2" },
             RE("input", { value: profileName, onChange: e => setProfileName(e.target.value), placeholder: "نام پیکربندی", className: "min-w-0 flex-1 rounded-lg px-3 py-2 text-[11px]", style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-2)" } }),
             RE("button", { type: "button", onClick: saveProfile, className: "px-3 py-2 rounded-lg text-[11px]", style: { background: "var(--accent-gold)", color: "var(--bg-page)" } }, "ذخیره")),
         Object.keys(profiles).length > 0 && RE("div", { className: "mt-2" },
-            RE("div", { className: "text-[10px] mb-1", style: { color: "var(--text-muted)" } }, "برای اجرا، روی دکمهٔ فعال‌سازی همان فرم بزنید؛ وضعیت «سفارشی» در بالا روشن می‌شود. ثبت ورود و نتیجه معامله مستقل‌اند:"),
+            RE("div", { className: "text-[10px] mb-1", style: { color: "var(--text-muted)" } }, "برای استفاده، فرم موردنظر را انتخاب کنید؛ همان فرم هم‌زمان برای «ثبت ورود» و «ثبت نتیجه معامله» فعال می‌شود:"),
             Object.keys(profiles).map(name => RE("div", { key: name, className: "flex items-center gap-2 mb-1.5" },
                 RE("span", { className: "min-w-0 flex-1 text-[10px]", style: { color: "var(--text-secondary)" } }, name),
-                RE("button", { type: "button", onClick: () => { setProfileName(name); applyMode("entry", "custom", name); }, className: "px-2 py-1 rounded-md text-[10px]", style: { background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-2)" } }, "فعال‌سازی برای ثبت ورود"),
-                RE("button", { type: "button", onClick: () => { setProfileName(name); applyMode("result", "custom", name); }, className: "px-2 py-1 rounded-md text-[10px]", style: { background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-2)" } }, "فعال‌سازی برای نتیجه معامله")))));
+                RE("button", { type: "button", onClick: () => applyJournalForm("custom", name), className: "px-2 py-1 rounded-md text-[10px]", style: { background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-2)" } }, "انتخاب فرم")))));
     return RE(NmCollapsible, { title: "فیلدهای سفارشی معامله", subtitle: "تنظیم مستقل ثبت ورود و ثبت نتیجه معامله", icon: "🧩" },
         RE("p", { className: "text-[11px] leading-6 mb-3", style: { color: "var(--text-secondary)" } }, "حالت خام فیلدهای سفارشی را از فرم پنهان می‌کند و اطلاعات قبلی را پاک نمی‌کند. پیکربندی‌ها برای استفاده‌ی دوباره ذخیره می‌شوند."),
         modePanel,
@@ -6395,7 +6451,7 @@ function NmNotificationTextSettings() {
         ["motivation", "پیام‌های انگیزشی کتابخانه", "پیام‌های انگیزشی زمان‌بندی‌شده", "./notification-icons/05-motivation.png"]
     ];
     const toggle = key => setSettings(prev => { const next = nmTextNotifSaveSettings({ ...prev, [key]: !(prev[key] !== false) }); return next; });
-    return RE("section", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
+    return RE("section", { className: "rounded-2xl p-3 mb-3", style: { background: "var(--bg-card2)", border: "1px solid var(--border-2)" } },
         RE("button", { type: "button", onClick: () => setExpanded(v => !v), className: "w-full flex items-center justify-between", "aria-expanded": expanded },
             RE("span", { className: "flex items-center gap-2 text-[13px] font-bold", style: { color: "var(--text-primary)" } }, "🔔", "نوتیفیکیشن‌های متنی"),
             RE("span", { className: "text-[10px]", style: { color: "var(--accent-gold)" } }, expanded ? "بستن ▲" : "تنظیم دسته‌ها ▼")),
@@ -8139,7 +8195,7 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
  const [layout,setLayout]=React.useState(()=>{try{const x=JSON.parse(localStorage.getItem(NM_DASH_LAYOUT_KEY)||"null");return Array.isArray(x)&&x.length?x:NM_DASH_DEFAULT_LAYOUT}catch(e){return NM_DASH_DEFAULT_LAYOUT}});const [drag,setDrag]=React.useState(null);const [selected,setSelected]=React.useState(null);const [excursion,setExcursion]=React.useState(null);const [replay,setReplay]=React.useState(null);const [coach,setCoach]=React.useState(false);
  const persistFilters=x=>{setFilters(x);try{localStorage.setItem(NM_DASH_FILTER_KEY,JSON.stringify(x))}catch(e){}};const saveLayout=a=>{setLayout(a);try{localStorage.setItem(NM_DASH_LAYOUT_KEY,JSON.stringify(a))}catch(e){}};const reorder=(from,to)=>{if(!from||from===to)return;const a=[...layout],i=a.indexOf(from),j=a.indexOf(to);if(i<0||j<0)return;a.splice(i,1);a.splice(j,0,from);saveLayout(a);};const moveWidget=(id,dir)=>{const a=[...layout],i=a.indexOf(id),j=i+dir;if(i<0||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];saveLayout(a);};
  const analysisPlans=React.useMemo(()=>[...(plans||[]),...(chartPlans||[]),...(dayPlans||[])],[plans,chartPlans,dayPlans]);
- const closed=(trades||[]).filter(t=>t.status==="closed");const sessions=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSession))).filter(Boolean).sort(),[trades]);const setups=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSetup))).filter(Boolean).sort(),[trades]);const filtered=React.useMemo(()=>closed.filter(t=>nmDashFilterDate(t,filters.range,todayStr)&&(filters.session==="all"||nmDashSession(t)===filters.session)&&(filters.setup==="all"||nmDashSetup(t)===filters.setup)&&(filters.direction==="all"||t.direction===filters.direction)),[closed,filters,todayStr]);const m=React.useMemo(()=>nmDashMetrics(filtered,startingBalance),[filtered,startingBalance]);
+ const closed=(trades||[]).filter(t=>t.status==="closed");const sessions=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSession))).filter(Boolean).sort(),[trades]);const setups=React.useMemo(()=>Array.from(new Set(closed.map(nmDashSetup))).filter(Boolean).sort(),[trades]);const filtered=React.useMemo(()=>closed.filter(t=>nmDashFilterDate(t,filters.range,todayStr)&&(filters.session==="all"||nmDashSession(t)===filters.session)&&(filters.setup==="all"||nmDashSetup(t)===filters.setup)&&(filters.direction==="all"||t.direction===filters.direction)),[closed,filters,todayStr]); const advancedRecommendations = React.useMemo(() => nmAdvancedRecommendations(filtered), [filtered]); const m=React.useMemo(()=>nmDashMetrics(filtered,startingBalance),[filtered,startingBalance]);
  const edge=React.useMemo(()=>{const make=fn=>{const map={};filtered.forEach(t=>{const k=fn(t);if(!k)return;(map[k]??=[]).push(t)});return Object.entries(map).map(([name,ts])=>{const mm=nmDashMetrics(ts,0);return{name,count:ts.length,pnl:mm.pnl,win:mm.winRate,exp:mm.expectancy}}).sort((a,b)=>b.pnl-a.pnl)};return{session:make(nmDashSession),setup:make(nmDashSetup)}},[filtered]);
  const excursionStats=React.useMemo(()=>{const x=filtered.filter(t=>Number.isFinite(Number(t.mfe))||Number.isFinite(Number(t.mae)));const avgM=x.length?x.reduce((s,t)=>s+Number(t.mfe||0),0)/x.length:null,avgA=x.length?x.reduce((s,t)=>s+Number(t.mae||0),0)/x.length:null,eff=x.filter(t=>Number.isFinite(Number(t.exitEfficiency)));return{count:x.length,avgM,avgA,avgEff:eff.length?eff.reduce((s,t)=>s+Number(t.exitEfficiency),0)/eff.length:null}} , [filtered]);
  const mistakes=React.useMemo(()=>{const map={};filtered.forEach(t=>(t.disciplineMistakes||t.review?.mistakes||[]).forEach(k=>{map[k]??={count:0,pnl:0};map[k].count++;map[k].pnl+=Number(t.pnl)||0}));return Object.entries(map).map(([key,v])=>({key,label:(NM_DISCIPLINE_OPTIONS.find(x=>x[0]===key)||NM_REVIEW_MISTAKES.find(x=>x[0]===key)||[key,key])[1],...v})).sort((a,b)=>a.pnl-b.pnl)},[filtered]);
@@ -8218,14 +8274,15 @@ function NmDashboard({trades,startingBalance,todayStr,onEditTrade,onPersistTrade
        RE(NmAdvancedSection,{number:"۳",title:"شاخص‌ها و جزئیات معاملات",subtitle:"KPI، Equity Curve، Session/Setup، Discipline، Plan و Drill-down",accent:"#10B981",help:NM_ADVANCED_SECTION_GUIDES.widgets},React.createElement("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3"},layout.map(id=>React.createElement(React.Fragment,{key:id},widgets[id])))),
        RE(NmAdvancedSection,{number:"۴",title:"تحلیل مالی پیشرفته",subtitle:"SQN، Expectancy، Kelly، Drawdown، VaR/CVaR و Monte Carlo",accent:"#8B5CF6",help:NM_ADVANCED_SECTION_GUIDES.financial},RE(NmAdvancedFinancialPanel,{trades:filtered,startingBalance:startingBalance})),
        RE(NmAdvancedSection,{number:"۵",title:"موتورهای تحلیل استراتژیک",subtitle:"Edge، Regime، رفتار، Attribution، سناریو، تصمیم و LLM",accent:"#06B6D4",help:NM_ADVANCED_SECTION_GUIDES.strategic},RE(NmStrategicEnginePanel,{trades:filtered,startingBalance:startingBalance})),
-       RE(NmAdvancedSection,{number:"۶",title:"خروجی ارزیابی پیشرفته",subtitle:"گزارش Excel/PDF از نتایج همین دامنه ارزیابی",accent:"#A78BFA",help:NM_ADVANCED_SECTION_GUIDES.export},
+       RE(NmAdvancedSection,{number:"۶",title:"توصیه",subtitle:"جملات کوتاه پیشنهادی بر اساس نتایج همین ارزیابی",accent:"#F59E0B",help:{mechanism:"توصیه‌ها از شاخص‌های ارزیابی پیشرفته، عملکرد اخیر، نشست‌ها و خطاهای ثبت‌شده استخراج می‌شوند و جایگزین محاسبات نیستند."}},RE(NmDashboardRecommendations,{title:"توصیه",recommendations:advancedRecommendations,accent:"#F59E0B"})),
+       RE(NmAdvancedSection,{number:"۷",title:"خروجی ارزیابی پیشرفته",subtitle:"گزارش Excel/PDF از نتایج همین دامنه ارزیابی",accent:"#A78BFA",help:NM_ADVANCED_SECTION_GUIDES.export},
          React.createElement("div",{className:"rounded-xl p-3",style:{background:"color-mix(in srgb, #8B5CF6 7%, var(--bg-card2))",border:"1px solid color-mix(in srgb, #8B5CF6 30%, var(--border-1))"}},
            React.createElement("div",{className:"flex items-center justify-between mb-2"},React.createElement("div",null,React.createElement("div",{className:"text-[12px] font-semibold",style:{color:"var(--text-primary)"}},"خروجی ارزیابی پیشرفته"),React.createElement("div",{className:"text-[9px] mt-1",style:{color:"var(--text-muted)"}},"فقط شاخص‌های ریسک، خروج، Edge، Discipline و Planهای ارزیابی پیشرفته")),React.createElement("span",{className:"text-[9px]",style:{color:"var(--text-muted)"}},`${selectedBaseAccounts.length} حساب مبنا`)),
            React.createElement("div",{className:"grid grid-cols-2 gap-2"},
              React.createElement("button",{onClick:onExportAdvancedExcel,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"#8B5CF6",color:"#fff"}},"Excel ارزیابی پیشرفته"),
              React.createElement("button",{onClick:onExportAdvancedPdf,className:"py-2.5 rounded-xl text-[11px] font-semibold",style:{background:"var(--bg-card2)",color:"#A78BFA",border:"1px solid #8B5CF6"}},"PDF ارزیابی پیشرفته")))))
        ),
-       RE(NmDashboardAIArm,{mode:"advanced",trades:filtered}),
+       RE(NmDashboardAIArm,{mode:"advanced",trades:filtered,recommendations:advancedRecommendations}),
        React.createElement(PsychologyLayer,{journalTrades:closed,statementTrades:statementTrades,source:psychologyDataSource,setSource:setPsychologyDataSource,psychOptions:psychOptions,activeAccount:activeAccount,statementImporting:statementImporting,statementImportError:statementImportError,onImportDashboardStatementFiles:onImportDashboardStatementFiles,onClearDashboardStatement:onClearDashboardStatement,dashboardStatementTrades:dashboardStatementTrades,baseAccounts:baseAccounts,selectedBaseAccounts:selectedBaseAccounts,onToggleBaseAccount:onToggleBaseAccount,onSelectBaseType:onSelectBaseType,onToggleAllBaseAccounts:onToggleAllBaseAccounts,accountTypeOf:accountTypeOf}),
        RE(NmPortfolioView,{accounts:selectedBaseAccounts,accountTypes,activeAccount,accountTradesMap}),
 React.createElement("section",{className:"rounded-2xl mt-3 mb-3",style:nmDashBoxStyle(NM_DASH_ACCENT.exp)},
@@ -12991,7 +13048,6 @@ function App() {
             RE(NmLayerHeading,{title:t("settings_title"),Icon:SettingsIcon}),
             React.createElement("div", { className: "text-[10px] leading-5 mb-3 px-1", style: { color: "var(--text-muted)" } }, "پروفایل برای هویت و تنظیمات شخصی؛ تمپلت برای ذخیره و بازگردانی مجموعه تنظیمات سفارشی برنامه."),
             React.createElement("div", { className: "px-4 mt-4 nm-settings-stack" },
-            RE(NmNotificationTextSettings, null),
             RE(NmSettingsAutoCollapse, null,
             React.createElement("div", { className: "rounded-2xl p-3 mb-3 nm-profile-card", style: { background: "color-mix(in srgb, #60A5FA 5%, var(--bg-card))", border: "1px solid color-mix(in srgb, #60A5FA 26%, var(--border-1))", borderRight: "4px solid #60A5FA", width: "100%" } },
                 React.createElement("button", { type: "button", onClick: () => setSettingsProfileSection(settingsProfileSection === "profile" ? "" : "profile"), className: "w-full flex items-center justify-between", style: { color: "var(--text-primary)" } },
@@ -13047,6 +13103,7 @@ function App() {
             RE(NmNavLayoutCard, { value: navLayout, onChange: persistNavLayout }),
             RE(NmSettingsErrorBoundary, null, RE(NmNavBarModeCard, { value: navBarMode, onChange: persistNavBarMode })),
             RE(NmSettingsErrorBoundary, null, RE(NmNavOrderCard, { value: navOrder, onChange: persistNavOrder })),
+            RE(NmNotificationTextSettings, null),
             RE(NmLibrarySettingsCard, { open: !!openSettingsSection.library, onToggle: () => toggleSettingsSection("library") }),
             React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: "var(--bg-card)", border: "1px solid var(--border-1)" } },
                 React.createElement("button", { onClick: () => toggleSettingsSection("language"), className: "w-full flex items-center justify-between mb-2" },
