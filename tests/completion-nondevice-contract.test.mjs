@@ -19,10 +19,12 @@ test('quick-launch controls are disabled by default and appear on the right edge
 });
 
 test('session clock is larger and has a thicker session ring with more legible labels', () => {
-  assert.match(html, /max-w-\[340px\]/);
-  assert.match(html, /const sessR = 128, sessW = 23;/);
-  assert.match(html, /fontSize: major \? 14 : 12/);
-  assert.match(html, /fontSize: "8", fontWeight: "600"/);
+  assert.match(html, /max-w-\[380px\]/);
+  assert.match(html, /const size = 380, cx = size \/ 2, cy = size \/ 2;/);
+  assert.match(html, /const sessR = 133, sessW = 28;/);
+  assert.match(html, /lp = polar\(cx, cy, 103, a\)/);
+  assert.match(html, /fontSize: major \? 16 : 14/);
+  assert.match(html, /fontSize: "10", fontWeight: "700"/);
 });
 
 test('custom trade-field manager is not in global Settings and is inside Journal account settings', () => {
@@ -33,4 +35,6 @@ test('custom trade-field manager is not in global Settings and is inside Journal
   assert.ok(managerAt > journalSettings, 'manager belongs to Journal account settings');
   assert.ok(managerAt > settingsArea, 'manager must not be rendered in the global Settings layer');
   assert.match(html.slice(managerAt, managerAt + 100), /RE\(NmCustomFieldsManager, null\)/);
+  assert.match(html, /فعال‌سازی برای ثبت ورود/);
+  assert.match(html, /فعال‌سازی برای نتیجه معامله/);
 });
