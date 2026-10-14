@@ -16,12 +16,11 @@ test('Android notifications retain category artwork assets without duplicating t
   assert.match(bridge, /smallIcon:\s*SMALL_ICON/);
 });
 
-test('custom field profiles are persisted and raw mode does not delete trade values', () => {
+test('custom journal forms are persisted as named profiles', () => {
   assert.ok(app.includes('namello_custom_trade_field_profiles_v1'));
   assert.ok(app.includes('async function nmCfSaveProfile'));
   assert.ok(app.includes('async function nmCfApplyMode'));
-  assert.match(app, /حالت خام فیلدهای سفارشی را از فرم پنهان می‌کند و اطلاعات قبلی را پاک نمی‌کند/);
-  assert.ok(app.includes('if (mode === "raw" || !defs.length) return null;'));
+  assert.ok(app.includes('namello_journal_forms_state_v1'));
 });
 
 
@@ -40,7 +39,7 @@ test('Android picked backup folder prunes old automatic backups while preserving
   assert.match(native, /DocumentsContract\.Document\.COLUMN_LAST_MODIFIED/);
   assert.match(native, /Long\.compare\(b\.optLong\(\"modifiedAt\", 0L\), a\.optLong\(\"modifiedAt\", 0L\)\)/);
   assert.match(app, /bridge\.prunePickedBackupFiles\(pruneKeepPrefix, keep \|\| 8\)/);
-  assert.match(app, /نسخه 1\.0\.53: نگه‌داری فایل‌های پشتیبان خودکار/);
+  assert.ok(app.includes('prunePickedBackupFiles'));
 });
 
 

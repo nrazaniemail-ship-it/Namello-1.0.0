@@ -203,7 +203,7 @@ test("1.0.46: weekly icon theme (7 images, one per weekday) + fixed themes sub-s
   }
   // each image belongs to the weekday named in the uploaded file (Sunday_Planning ... Saturday_Analysis)
   assert.deepEqual(Object.fromEntries(week.map((m) => [m[1], m[3]])), { sun: "Planning", mon: "Market Awakening", tue: "Momentum", wed: "Balance", thu: "Volatility", fri: "Review", sat: "Analysis" });
-  assert.ok(index.includes('"تم آیکون متغیر هفتگی"') && index.includes('"تم آیکون سفارشی ثابت"'));
+  assert.ok(index.includes('"پوسته آیکون متغیر هفتگی"') && index.includes('"پوسته آیکون سفارشی ثابت"'));
   assert.ok(index.includes("persistIconWeekly") && index.includes("window.NamelloAndroid.setWeeklyIcon(on)"));
   assert.ok(index.includes("nmApplyIconTheme(iconTheme, iconWeekly ? dayKey : null)"));
   assert.ok(index.includes("src: iconWeekly ? nmWeekIcon(dayKey)"));
@@ -224,7 +224,7 @@ test("1.0.46: nmWeekdayKey maps JS weekdays correctly", () => {
 
 test("1.0.46: help texts follow the new behaviour", () => {
   assert.ok(index.includes('Weekly Icon Theme') && index.includes('"Navigation bar": {icon:"📱"'));
-  assert.ok(index.includes("«تم آیکون سفارشی ثابت»") );
+  assert.ok(index.includes("«پوسته آیکون سفارشی ثابت»") );
   assert.ok(!index.includes("آیکون لانچر در خودِ APK ثابت است"), "outdated APK icon statement removed");
 });
 

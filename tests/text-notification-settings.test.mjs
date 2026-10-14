@@ -23,7 +23,7 @@ test('session and news notifications respect global category toggles and include
   assert.match(app, /if \(!nmTextNotifEnabled\(category\)\) return;/);
   assert.match(app, /data: \{ kind: category, category \}/);
   assert.match(app, /fireNotification\(`شروع \$\{ev\.name\}`, `\$\{ev\.kind\} «\$\{ev\.name\}» شروع شد\.`, "sessions"\)/);
-  assert.match(app, /fireNotification\(`\\u062E\\u0628\\u0631: \$\{ev\.title\}`,[\s\S]{0,250}"news"\)/);
+  assert.match(app, /fireNotification\(`خبر: \$\{ev\.title\}`,[\s\S]{0,250}"news"\)/);
   for (const file of ['01-evaluation.png','02-psychology.png','03-sessions-and-events.png','04-news.png','05-motivation.png']) {
     assert.ok(app.includes(file));
     assert.ok(sw.includes(file), `service worker does not cache ${file}`);

@@ -28,13 +28,13 @@ test('session clock is larger and has a thicker session ring with more legible l
 });
 
 test('custom trade-field manager is not in global Settings and is inside Journal account settings', () => {
-  const managerAt = html.indexOf('RE(NmCustomFieldsManager, null)');
+  const managerAt = html.indexOf('RE(NmCustomFieldsManager, { getLists: getJournalLists, applyLists: applyJournalLists })');
   const settingsArea = html.indexOf('RE(NmCollapsible, { title: "امنیت، پشتیبان، ذخیره ابری و Namello Backend"');
   const journalSettings = html.indexOf('showAccSettings && (React.createElement("div"');
   assert.notEqual(managerAt, -1);
   assert.ok(managerAt > journalSettings, 'manager belongs to Journal account settings');
   assert.ok(managerAt > settingsArea, 'manager must not be rendered in the global Settings layer');
-  assert.match(html.slice(managerAt, managerAt + 100), /RE\(NmCustomFieldsManager, null\)/);
+  assert.match(html.slice(managerAt, managerAt + 100), /RE\(NmCustomFieldsManager, \{ getLists/);
   assert.match(html, /فرم فعال ژورنال/);
   assert.match(html, /ثبت ورود/);
   assert.match(html, /ثبت نتیجه معامله/);
