@@ -108,7 +108,7 @@
   function ensureChannels() {
     if (channelsPromise) return channelsPromise;
     var ch1 = call('LocalNotifications', 'createChannel', {
-      id: CH_ALERT, name: 'هشدارهای Namello', description: 'آلارم نشست‌ها، اخبار و پیام‌های انگیزشی',
+      id: CH_ALERT, name: 'هشدارهای Namello', description: 'هشدار نشست‌ها، اخبار و پیام‌های انگیزشی',
       importance: 5, visibility: 1, vibration: true, lights: true
     }).catch(function () { });
     var ch2 = call('LocalNotifications', 'createChannel', {
@@ -131,7 +131,7 @@
     return call('LocalNotifications', 'checkExactNotificationSetting').then(function (r) {
       if (r && r.exact_alarm === 'denied') {
         try { localStorage.setItem(KEY_EXACT_ASKED, '1'); } catch (e) { }
-        toast('برای دقیق بودن آلارم‌ها، در صفحه‌ی بعد دسترسی «آلارم‌ها و یادآورها» را روشن کن.');
+        toast('برای دقیق بودن هشدارها، در صفحه‌ی بعد دسترسی «هشدارها و یادآورها» را روشن کن.');
         return new Promise(function (resolve) { setTimeout(resolve, 1500); }).then(function () {
           return call('LocalNotifications', 'changeExactNotificationSetting');
         });

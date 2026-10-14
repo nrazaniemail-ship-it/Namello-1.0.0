@@ -1,20 +1,20 @@
 // v3: مشکل نسخه‌ی قبل این بود که index.html (که تمام کد برنامه توش inline هست) با استراتژی
 // "اول کش" سرو می‌شد — یعنی بعد از اولین بار، حتی وقتی اینترنت وصل بود و نسخه‌ی جدیدی روی
-// هاست آپلود شده بود، سرویس‌ورکر همچنان همون نسخه‌ی قدیمیِ کش‌شده رو نشون می‌داد و کاربر آخرین
+// هاست بارگذاری شده بود، سرویس‌ورکر همچنان همون نسخه‌ی قدیمیِ کش‌شده رو نشون می‌داد و کاربر آخرین
 // تغییرات رو نمی‌دید.
 // این نسخه، استراتژی رو برای خودِ index.html به "اول شبکه" (network-first) تغییر داده: هر بار
 // که اینترنت وصله، همیشه نسخه‌ی تازه از سرور گرفته و نشون داده می‌شه (و همون نسخه هم برای
 // دفعات آفلاینِ بعدی کش می‌شه). فقط وقتی واقعاً آفلاینیم، از کش قدیمی استفاده می‌شه.
-// برای فایل‌های CDN (React, XLSX, Plotly, Tailwind, فونت‌ها) که نسخه‌شون پین‌شده و عوض نمی‌شه،
+// برای فایل‌های CDN (React, XLSX, Plotly, Tailwind, قلم‌ها) که نسخه‌شون پین‌شده و عوض نمی‌شه،
 // همچنان استراتژی "اول کش" (سریع‌تر و برای آفلاین قابل‌اعتمادتر) باقی مونده.
-// نام کش به نسخه‌ی برنامه گره خورده (Namello 1.0.4 / Version Code 71)؛ با هر آپدیت این را عوض کن.
+// نام کش به نسخه‌ی برنامه گره خورده (Namello 1.0.4 / Version Code 71)؛ با هر بروزرسانی این را عوض کن.
 const CACHE_NAME = "namello-1.0.4-c71";
 
 const HTML_URLS = ["./", "./index.html"];
 const WIDGET_URL = "./widget.html";
 const APP_SHELL = ["./manifest.json", "./manifest-midnight.json", "./manifest-emerald.json", "./manifest-royal.json", "./manifest-graphite.json", "./manifest-sunset.json", "./manifest-ruby.json", "./icon-192.png", "./icon-512.png", "./icon-mt5.jpg", "./icon-tradingview.png", "./icon-dashboard-logo.png", "./icon-sessions.png", "./icon-journal.png", "./icon-journal-192.png", "./icon-journal-512.png", "./logos/01-evaluation.png", "./logos/02-psychology.png", "./logos/03-sessions-and-events.png", "./logos/04-news.png", "./logos/05-motivation.png", WIDGET_URL];
 
-// آیکون‌های تم‌های آیکون (اختیاری؛ اگر یکی نبود نصب شکست نمی‌خورد)
+// آیکون‌های پوسته‌های آیکون (اختیاری؛ اگر یکی نبود نصب شکست نمی‌خورد)
 const OPTIONAL_LOCAL = ["./version.json", "./native-bridge.js", "./icon-day-sat.jpg", "./icon-day-sun.jpg", "./icon-day-mon.jpg", "./icon-day-tue.jpg", "./icon-day-wed.jpg", "./icon-day-thu.jpg", "./icon-day-fri.jpg", "./icon-midnight-192.png", "./icon-emerald-192.png", "./icon-royal-192.png", "./icon-graphite-192.png", "./icon-sunset-192.png", "./icon-ruby-192.png"];
 
 const RUNTIME_DEPS = [
@@ -58,8 +58,8 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// دکمه‌ی «بازگشت به Namello»: وقتی برنامه پس‌زمینه می‌شه (طبق تنظیمات کاربر در تب «تنظیمات»)،
-// یک نوتیفیکیشن نشون داده می‌شه؛ با تپ روی خودِ نوتیفیکیشن، اگه یه تب/پنجره‌ی Namello باز باشه
+// دکمه‌ی «بازگشت به Namello»: وقتی برنامه پس‌زمینه می‌شه (طبق تنظیمات کاربر در زبانه «تنظیمات»)،
+// یک اعلان نشون داده می‌شه؛ با تپ روی خودِ اعلان، اگه یه زبانه/پنجره‌ی Namello باز باشه
 // فوکوس می‌گیره، وگرنه یه پنجره‌ی جدید باز می‌شه.
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();

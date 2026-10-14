@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Namello 1.0.4",
   "short_name": "Namello 1.0.4",
-  "description": "ژورنال معاملاتی Namello با Dashboard، تحلیل آماری، ارزیابی پیشرفته، ایمپورت استیتمنت MT4/MT5 و مدیریت معاملات",
+  "description": "ژورنال معاملاتی Namello با Dashboard، تحلیل آماری، ارزیابی پیشرفته، وارد کردن صورت‌حساب MT4/MT5 و مدیریت معاملات",
   "start_url": "./index.html?v=1000",
   "scope": "./",
   "display": "standalone",
@@ -39,8 +39,8 @@
   ],
   "shortcuts": [
     {
-      "name": "ویجت نشست‌ها",
-      "short_name": "ویجت",
+      "name": "ابزارک نشست‌ها",
+      "short_name": "ابزارک",
       "description": "ساعت‌شمار گرد و نشست‌های فعال، به‌صورت یک صفحه‌ی مستقل و کوچک",
       "url": "./widget.html",
       "icons": [
