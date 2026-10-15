@@ -10,12 +10,12 @@ test('central text-notification settings expose five independent persisted categ
   assert.ok(app.includes('namello_text_notification_settings_v1'));
   assert.ok(app.includes('function nmTextNotifLoadSettings()'));
   assert.ok(app.includes('function nmTextNotifSaveSettings(next)'));
-  assert.ok(app.includes('function NmNotificationTextSettings()'));
+  assert.ok(app.includes('function NmNotificationTextSettings({ embedded })'));
   for (const category of ['sessions', 'news', 'evaluation', 'psychology', 'motivation']) {
     assert.match(app, new RegExp(`${category}: true`));
     assert.ok(app.includes(`"${category}"`), `missing category ${category}`);
   }
-  assert.ok(app.includes('RE(NmNotificationTextSettings, null)'));
+  assert.ok(app.includes('RE(NmNotificationsSettings, {'));
 });
 
 test('session and news notifications respect global category toggles and include category metadata/artwork', () => {
