@@ -72,13 +72,17 @@ for (const dir of ["", "public/"]) {
     await edit(dir + m, (t) => t
       .replace(/("name"\s*:\s*"Namello )[^"]*(")/, `$1${next}$2`)
       .replace(/("short_name"\s*:\s*"Namello )[^"]*(")/, `$1${next}$2`)
-      .replace(/("version"\s*:\s*")[^"]*(")/, `$1${next}$2`));
+      .replace(/("version"\s*:\s*")[^"]*(")/, `$1${next}$2`)
+      .replace(/("versionCode"\s*:\s*)\d+/, `$1${nextCode}`));
   }
   await edit(dir + "sw.js", (t) => t
     .replace(/const CACHE_NAME = "namello-[^"]*";/, `const CACHE_NAME = "namello-${next}-c${nextCode}";`)
     .replace(/\(Namello [0-9.]+ \/ Version Code \d+\)/, `(Namello ${next} / Version Code ${nextCode})`));
 }
 
+await edit("backend/package.json", (t) => t.replace(/("version"\s*:\s*")[^"]+(")/, `$1${next}$2`), { required: false });
+await edit("backend/server.mjs", (t) => t.replace(/(service: 'namello-sync', version: ')[^']*(')/, `$1${next}$2`), { required: false });
+await edit("CHANGELOG.md", (t) => /^# Namello [0-9.]+ — Version Code \d+/.test(t) ? t.replace(/^# Namello [0-9.]+ — Version Code \d+/, `# Namello ${next} — Version Code ${nextCode}`) : `# Namello ${next} — Version Code ${nextCode}\n\n` + t, { required: false });
 await edit("README.md", (t) => t.replace(/^# Namello [0-9.]+/m, `# Namello ${next}`), { required: false });
 
 console.log(`\nDone (${touched} files changed). Remember to add the release notes to NM_CHANGELOG in index.html,`);
