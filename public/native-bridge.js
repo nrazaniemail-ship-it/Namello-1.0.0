@@ -37,6 +37,13 @@
   var CH_ALERT = 'namello-alerts';
   var CH_QUIET = 'namello-quiet';
   var SMALL_ICON = 'ic_stat_namello';
+  /* آیکون اختصاصی هر دستهٔ اعلان (drawable‌هایی که configure-android.mjs کپی می‌کند) */
+  var ART_KINDS = { session: 'sessions', sessions: 'sessions', news: 'news', evaluation: 'evaluation', psychology: 'psychology', motivation: 'motivation' };
+  function largeIconFor(kind, tag) {
+    var k = ART_KINDS[String(kind || '')];
+    if (!k && tag) { var m = /^namello-(motivation|reco-evaluation|reco-psychology|evt)/.exec(String(tag)); if (m) k = m[1] === 'motivation' ? 'motivation' : (m[1].indexOf('reco-') === 0 ? m[1].slice(5) : null); }
+    return k ? 'nm_notif_' + k : null;
+  }
   // Large notification artwork; configure-android copies these assets into drawable-nodpi.
   function categoryIcon(title, body, extra) {
     var meta = extra || {};
@@ -183,6 +190,8 @@
       channelId: options.silent ? CH_QUIET : CH_ALERT,
       smallIcon: SMALL_ICON, extra: { tag: options.tag || '' }
     };
+    var li = largeIconFor(options.data && (options.data.kind || options.data.category), options.tag);
+    if (li) n.largeIcon = li;
     if (body.length > 40) n.largeBody = body;
     return call('LocalNotifications', 'schedule', { notifications: [n] }).catch(function (e) {
       try { console.warn('[Namello native] notification failed', e); } catch (e2) { }
@@ -286,6 +295,8 @@
   }
   function validPair(a) { return Array.isArray(a) && a.length >= 2 && isFinite(a[0]) && isFinite(a[1]); }
 
+  function prefNum(key, def, min, max) { var p = readLocalJson(KEY_TEXT_NOTIFS) || {}; var v = Number(p[key]); return isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : def; }
+  function faNum(n) { try { return Number(n).toLocaleString('fa-IR'); } catch (e) { return String(n); } }
   function planSessions(config, now, out) {
     if (!config || typeof config !== 'object') return;
     var cats = [['sessions', 'نشست'], ['killzones', 'کیل‌زون'], ['silverbullets', 'سیلور بولت']];
@@ -307,6 +318,10 @@
           if (ev.alarmStart && startAt > now + 5000 && startAt < now + HORIZON_MS) {
             out.push({ at: startAt, title: 'شروع ' + name, body: cat[1] + ' «' + name + '» شروع شد.', kind: 'session' });
           }
+          var leadMin = prefNum('sessionLeadMin', 0, 0, 120);
+          if (leadMin > 0 && ev.alarmStart && startAt - leadMin * 60000 > now + 5000 && startAt - leadMin * 60000 < now + HORIZON_MS) {
+            out.push({ at: startAt - leadMin * 60000, title: faNum(leadMin) + ' دقیقه تا شروع ' + name, body: cat[1] + ' «' + name + '» ' + faNum(leadMin) + ' دقیقه دیگر شروع می‌شود.', kind: 'session' });
+          }
           if (ev.alarmEnd && endAt > now + 5000 && endAt < now + HORIZON_MS) {
             out.push({ at: endAt, title: 'پایان ' + name, body: cat[1] + ' «' + name + '» به پایان رسید.', kind: 'session' });
           }
@@ -315,17 +330,17 @@
     });
   }
   /* هم‌ارز nmNewsAlarmOn در index.html: زنگِ دستیِ کاربر معتبر است؛ وگرنه خبرهای پراهمیت پیش‌فرض هشدار دارند */
-  function newsAlarmOn(ev) { return !!ev && (ev.alarmUser ? !!ev.alarmStart : (ev.alarmStart === true || ev.impact === 'high')); }
+  function newsAlarmOn(ev) { return !!ev && (ev.alarmUser ? !!ev.alarmStart : true); }
   function planNews(events, now, out) {
     if (!Array.isArray(events)) return;
-    var LEAD = 30 * 1000;
+    var LEAD = prefNum('newsLeadSec', 30, 10, 900) * 1000, LEADS = Math.round(LEAD / 1000);
     events.forEach(function (ev) {
       if (!newsAlarmOn(ev)) return;
       var ms = new Date(ev.datetime).getTime();
       if (!isFinite(ms)) return;
       var title = ev.title || '', cur = ev.currency || '';
       if (ms - LEAD > now + 5000 && ms - LEAD < now + HORIZON_MS) {
-        out.push({ at: ms - LEAD, title: '۳۰ ثانیه تا خبر: ' + title, body: 'خبر «' + title + '» (' + cur + ') تا ۳۰ ثانیه دیگر اعلام می‌شود.', kind: 'news' });
+        out.push({ at: ms - LEAD, title: faNum(LEADS) + ' ثانیه تا خبر: ' + title, body: 'خبر «' + title + '» (' + cur + ') تا ' + faNum(LEADS) + ' ثانیه دیگر اعلام می‌شود.', kind: 'news' });
       }
       if (ms > now + 5000 && ms < now + HORIZON_MS) {
         out.push({ at: ms, title: 'خبر: ' + title, body: 'خبر «' + title + '» (' + cur + ') هم‌اکنون اعلام شد.', kind: 'news' });
@@ -359,7 +374,6 @@
      هر اعلان از روی یک هش قطعی انتخاب می‌شود تا با هر همگام‌سازی جابه‌جا نشود. ساعت‌های ۲۲ تا ۸ صبح اعلان نمی‌آید. */
   var KEY_REC_POOL = 'namello_text_notif_reco_pool_v1';
   var REC_TITLES = { evaluation: 'توصیه ارزیابی پیشرفته Namello', psychology: 'توصیه روانشناسی معامله‌گری Namello' };
-  var REC_SLOT_MS = 150 * 60 * 1000;
   function recHash(n) { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n = n ^ (n >>> 4); n = Math.imul(n, 0x27d4eb2d); n = n ^ (n >>> 15); return (n >>> 0) / 4294967296; }
   function planRecommendations(now, out) {
     var pool = readLocalJson(KEY_REC_POOL);
@@ -367,6 +381,7 @@
     ['evaluation', 'psychology'].forEach(function (cat, ci) {
       var texts = Array.isArray(pool[cat]) ? pool[cat].filter(function (x) { return typeof x === 'string' && x.trim(); }) : [];
       if (!texts.length) return;
+      var REC_SLOT_MS = prefNum(cat + 'IntervalMin', 150, 30, 1440) * 60 * 1000;
       var k0 = Math.floor(now / REC_SLOT_MS), kn = k0 + Math.ceil(HORIZON_MS / REC_SLOT_MS) + 1;
       for (var k = k0; k <= kn; k++) {
         var at = k * REC_SLOT_MS + Math.floor(recHash(k * 7 + ci * 100003) * REC_SLOT_MS);
@@ -435,6 +450,8 @@
             id: p.id, title: p.title, body: p.body, channelId: CH_ALERT, smallIcon: SMALL_ICON,
             schedule: { at: new Date(p.at), allowWhileIdle: true }, extra: { kind: p.kind }
           };
+          var pli = largeIconFor(p.kind);
+          if (pli) n.largeIcon = pli;
           if (p.body.length > 40) n.largeBody = p.body;
           return n;
         });
