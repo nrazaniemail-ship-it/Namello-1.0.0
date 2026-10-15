@@ -1,4 +1,4 @@
-# Namello 1.0.26 — Feature Guide System
+# Namello 1.0.4 — Feature Guide System
 
 Every major layer and collapsible feature exposes a **Guide / راهنما** button. The guide center provides purpose, workflow, trading terminology, and practical tips.
 

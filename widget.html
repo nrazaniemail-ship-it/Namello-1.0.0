@@ -103,6 +103,27 @@
    main Namello app, drawn as colored sector arcs on a multi-ring circle. A real Android home-screen
    widget cannot be built from HTML/JS — it requires native code (Kotlin/Java + AppWidgetProvider). */
 
+/* زبان ابزارک از تنظیم برنامه خوانده می‌شود (آینهٔ localStorage) */
+const WIDGET_LANG = (() => { try { return localStorage.getItem("ns_namello_app_language_v1") === "en" ? "en" : "fa"; } catch (e) { return "fa"; } })();
+const WIDGET_EN = {
+  "نشست سیدنی": "Sydney Session", "نشست توکیو (آسیا)": "Tokyo Session (Asia)", "نشست لندن": "London Session", "نشست نیویورک": "New York Session",
+  "سشن سیدنی": "Sydney Session", "سشن توکیو (آسیا)": "Tokyo Session (Asia)", "سشن لندن": "London Session", "سشن نیویورک": "New York Session",
+  "کیل‌زون آسیا": "Asia Kill Zone", "کیل‌زون لندن": "London Kill Zone", "کیل‌زون نیویورک": "New York Kill Zone",
+  "الگوی نقطه بهینه ورود (OTE) صبح نیویورک": "New York AM Optimal Trade Entry (OTE) Pattern", "کیل‌زون بسته‌شدن لندن": "London Close Kill Zone",
+  "سیلور بولت (اول)": "Silver Bullet (1st)", "سیلور بولت (دوم)": "Silver Bullet (2nd)", "سیلور بولت (سوم)": "Silver Bullet (3rd)",
+  "نشست": "Session", "کیل‌زون": "Kill Zone", "سیلور بولت": "Silver Bullet",
+  "در حال حاضر هیچ نشست/کیل‌زونی فعال نیست": "No session or kill zone is active right now",
+  "کوچک‌تر": "Smaller", "بزرگ‌تر": "Larger", "برگشت به برنامه": "Back to the app", "Namello — ابزارک نشست‌ها": "Namello — Sessions Widget",
+};
+function L(x) { return WIDGET_LANG === "en" && WIDGET_EN[x] !== undefined ? WIDGET_EN[x] : x; }
+if (WIDGET_LANG === "en") {
+  document.documentElement.lang = "en"; document.documentElement.dir = "ltr";
+  document.title = WIDGET_EN["Namello — ابزارک نشست‌ها"];
+  document.addEventListener("DOMContentLoaded", () => document.querySelectorAll("[aria-label],[title]").forEach(el => {
+    ["aria-label", "title"].forEach(a => { const v = el.getAttribute(a); if (v && WIDGET_EN[v]) el.setAttribute(a, WIDGET_EN[v]); });
+  }));
+}
+
 function pad2(n) { return String(n).padStart(2, "0"); }
 
 function getNYNow() {
@@ -317,7 +338,7 @@ function buildLegend(sessions) {
     dot.className = "legend-dot";
     dot.style.background = s.color || "#D4A64A";
     item.appendChild(dot);
-    item.appendChild(document.createTextNode(s.name.replace("نشست ", "")));
+    item.appendChild(document.createTextNode(WIDGET_LANG === "en" ? L(s.name).replace(" Session", "") : s.name.replace("نشست ", "")));
     legendEl.appendChild(item);
   });
 }
@@ -329,9 +350,9 @@ function tick() {
   const config = loadConfig();
   buildLegend(config.sessions);
 
-  const sessionsEval = config.sessions.map(e => ({ ...evalEvent(e, now.minutesOfDay, now.dst), kind: "نشست" }));
-  const kzEval = config.killzones.map(e => ({ ...evalEvent(e, now.minutesOfDay, now.dst), kind: "کیل‌زون" }));
-  const sbEval = config.silverbullets.map(e => ({ ...evalEvent(e, now.minutesOfDay, now.dst), kind: "سیلور بولت" }));
+  const sessionsEval = config.sessions.map(e => ({ ...evalEvent(e, now.minutesOfDay, now.dst), kind: L("نشست") }));
+  const kzEval = config.killzones.map(e => ({ ...evalEvent(e, now.minutesOfDay, now.dst), kind: L("کیل‌زون") }));
+  const sbEval = config.silverbullets.map(e => ({ ...evalEvent(e, now.minutesOfDay, now.dst), kind: L("سیلور بولت") }));
   const all = [...sessionsEval, ...kzEval, ...sbEval];
 
   const withEnd = (e) => ({ ...e, endMin: (e.startMin + e.duration) % 1440 });
@@ -346,16 +367,16 @@ function tick() {
   if (focus) {
     if (focus.active) {
       const secLeft = focus.remaining * 60 - now.ss;
-      focusNameEl.textContent = focus.name;
+      focusNameEl.textContent = L(focus.name);
       focusCountdownEl.textContent = fmtDur(secLeft / 60);
       focusSubEl.textContent = activeNarrow[0]
-        ? `${focus.kind} فعال — تا پایان`
-        : (activeSessions.length > 1 ? `${activeSessions.length} نشست هم‌زمان فعال — تا پایانِ نزدیک‌ترین` : `${focus.kind} فعال — تا پایان`);
+        ? (WIDGET_LANG === "en" ? `${focus.kind} active — until end` : `${focus.kind} فعال — تا پایان`)
+        : (activeSessions.length > 1 ? (WIDGET_LANG === "en" ? `${activeSessions.length} sessions active at once — until the nearest ends` : `${activeSessions.length} نشست هم‌زمان فعال — تا پایانِ نزدیک‌ترین`) : (WIDGET_LANG === "en" ? `${focus.kind} active — until end` : `${focus.kind} فعال — تا پایان`));
     } else {
       const secLeft = focus.untilStart * 60 - now.ss;
-      focusNameEl.textContent = focus.name;
+      focusNameEl.textContent = L(focus.name);
       focusCountdownEl.textContent = fmtDur(secLeft / 60);
-      focusSubEl.textContent = `${focus.kind} — تا شروع`;
+      focusSubEl.textContent = WIDGET_LANG === "en" ? `${focus.kind} — until start` : `${focus.kind} — تا شروع`;
     }
   }
 
@@ -367,13 +388,13 @@ function tick() {
       span.className = "chip";
       span.style.background = (e.color || "#D4A64A") + "33";
       span.style.color = e.color || "#D4A64A";
-      span.textContent = e.name;
+      span.textContent = L(e.name);
       chipsEl.appendChild(span);
     });
   } else {
     const span = document.createElement("span");
     span.className = "empty";
-    span.textContent = "در حال حاضر هیچ نشست/کیل‌زونی فعال نیست";
+    span.textContent = L("در حال حاضر هیچ نشست/کیل‌زونی فعال نیست");
     chipsEl.appendChild(span);
   }
 }

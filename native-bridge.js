@@ -314,11 +314,13 @@
       });
     });
   }
+  /* هم‌ارز nmNewsAlarmOn در index.html: زنگِ دستیِ کاربر معتبر است؛ وگرنه خبرهای پراهمیت پیش‌فرض هشدار دارند */
+  function newsAlarmOn(ev) { return !!ev && (ev.alarmUser ? !!ev.alarmStart : (ev.alarmStart === true || ev.impact === 'high')); }
   function planNews(events, now, out) {
     if (!Array.isArray(events)) return;
     var LEAD = 30 * 1000;
     events.forEach(function (ev) {
-      if (!ev || !ev.alarmStart) return;
+      if (!newsAlarmOn(ev)) return;
       var ms = new Date(ev.datetime).getTime();
       if (!isFinite(ms)) return;
       var title = ev.title || '', cur = ev.currency || '';
@@ -353,15 +355,39 @@
       at += interval; count++;
     }
   }
+  /* توصیه‌های تصادفی (ارزیابی پیشرفته / روانشناسی): استخر متن‌ها را برنامه در localStorage می‌نویسد؛ زمان و متن
+     هر اعلان از روی یک هش قطعی انتخاب می‌شود تا با هر همگام‌سازی جابه‌جا نشود. ساعت‌های ۲۲ تا ۸ صبح اعلان نمی‌آید. */
+  var KEY_REC_POOL = 'namello_text_notif_reco_pool_v1';
+  var REC_TITLES = { evaluation: 'توصیه ارزیابی پیشرفته Namello', psychology: 'توصیه روانشناسی معامله‌گری Namello' };
+  var REC_SLOT_MS = 150 * 60 * 1000;
+  function recHash(n) { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n = n ^ (n >>> 4); n = Math.imul(n, 0x27d4eb2d); n = n ^ (n >>> 15); return (n >>> 0) / 4294967296; }
+  function planRecommendations(now, out) {
+    var pool = readLocalJson(KEY_REC_POOL);
+    if (!pool) return;
+    ['evaluation', 'psychology'].forEach(function (cat, ci) {
+      var texts = Array.isArray(pool[cat]) ? pool[cat].filter(function (x) { return typeof x === 'string' && x.trim(); }) : [];
+      if (!texts.length) return;
+      var k0 = Math.floor(now / REC_SLOT_MS), kn = k0 + Math.ceil(HORIZON_MS / REC_SLOT_MS) + 1;
+      for (var k = k0; k <= kn; k++) {
+        var at = k * REC_SLOT_MS + Math.floor(recHash(k * 7 + ci * 100003) * REC_SLOT_MS);
+        if (at <= now + 5000 || at >= now + HORIZON_MS) continue;
+        var hr = new Date(at).getHours();
+        if (hr < 8 || hr >= 22) continue;
+        var idx = Math.floor(recHash(k * 13 + ci * 7919 + 1) * texts.length);
+        out.push({ at: at, title: REC_TITLES[cat], body: texts[idx], kind: cat });
+      }
+    });
+  }
   function buildPlan(now) {
     return Promise.all([readStorageJson(KEY_CONFIG), readStorageJson(KEY_NEWS)]).then(function (res) {
       var out = [];
       planSessions(res[0], now, out);
       planNews(res[1], now, out);
       planMotivation(now, out);
+      planRecommendations(now, out);
       var textPrefs = readLocalJson(KEY_TEXT_NOTIFS) || {};
       out = out.filter(function (item) {
-        var category = item.kind === 'session' ? 'sessions' : item.kind === 'news' ? 'news' : item.kind === 'motivation' ? 'motivation' : null;
+        var category = item.kind === 'session' ? 'sessions' : (item.kind === 'news' || item.kind === 'motivation' || item.kind === 'evaluation' || item.kind === 'psychology') ? item.kind : null;
         return !category || textPrefs[category] !== false;
       });
       out.sort(function (a, b) { return a.at - b.at; });
