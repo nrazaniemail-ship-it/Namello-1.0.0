@@ -152,7 +152,7 @@ function validatePack(pack) {
 }
 function latest(userId) { return db.prepare('SELECT revision,device_id,updated_at,app_version,pack_json,created_at FROM sync_revisions WHERE user_id=? ORDER BY revision DESC LIMIT 1').get(userId); }
 
-app.get('/healthz', (_req, res) => res.json({ ok: true, service: 'namello-sync', version: '1.0.4', authMode: AUTH_MODE, time: nowIso() }));
+app.get('/healthz', (_req, res) => res.json({ ok: true, service: 'namello-sync', version: '1.0.1', authMode: AUTH_MODE, time: nowIso() }));
 app.post('/v1/auth/dev', (req, res) => {
   if (AUTH_MODE !== 'local' || NODE_ENV === 'production') return res.status(404).json({ error: 'not_available' });
   const ts = nowIso();

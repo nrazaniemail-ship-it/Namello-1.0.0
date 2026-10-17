@@ -1,6 +1,6 @@
 {
   "name": "namello-sync-backend",
-  "version": "1.0.4",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "engines": { "node": ">=22.5.0" },
