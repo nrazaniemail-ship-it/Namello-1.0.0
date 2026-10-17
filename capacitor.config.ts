@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "Namello",
   webDir: "dist",
   android: {
-    backgroundColor: "#0B0E11"
+    backgroundColor: "#030922"
   },
   plugins: {
     LocalNotifications: {
